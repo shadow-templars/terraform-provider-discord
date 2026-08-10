@@ -62,6 +62,7 @@ const (
 	permSendVoiceMessages   = 1 << 46
 	permSendPolls           = 1 << 49
 	permUseExternalApps     = 1 << 50
+	permSetVoiceChannelStatus = 1 << 48
 )
 
 type PermissionDataSource struct{}
@@ -112,6 +113,10 @@ type PermissionDataSourceModel struct {
 	UseExternalSounds    types.String `tfsdk:"use_external_sounds"`
 	SendVoiceMessages    types.String `tfsdk:"send_voice_messages"`
 	SendPolls            types.String `tfsdk:"send_polls"`
+	UseApplicationCommands types.String `tfsdk:"use_application_commands"`
+	SendThreadMessages   types.String `tfsdk:"send_thread_messages"`
+	StartEmbeddedActivities types.String `tfsdk:"start_embedded_activities"`
+	SetVoiceChannelStatus types.String `tfsdk:"set_voice_channel_status"`
 	AllowBits            types.Int64  `tfsdk:"allow_bits"`
 	DenyBits             types.Int64  `tfsdk:"deny_bits"`
 }
@@ -178,6 +183,10 @@ func (d *PermissionDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 			"use_external_sounds":     permAttr,
 			"send_voice_messages":     permAttr,
 			"send_polls":              permAttr,
+			"use_application_commands": permAttr,
+			"send_thread_messages":    permAttr,
+			"start_embedded_activities": permAttr,
+			"set_voice_channel_status": permAttr,
 			"allow_bits": schema.Int64Attribute{
 				Computed:    true,
 				Description: "The computed bitwise value of all permissions set to `allow`.",
@@ -251,6 +260,10 @@ func (d *PermissionDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		{data.UseExternalSounds, permUseExternalSounds},
 		{data.SendVoiceMessages, permSendVoiceMessages},
 		{data.SendPolls, permSendPolls},
+		{data.UseApplicationCommands, permUseAppCommands},
+		{data.SendThreadMessages, permSendMessagesInThreads},
+		{data.StartEmbeddedActivities, permUseEmbeddedActivities},
+		{data.SetVoiceChannelStatus, permSetVoiceChannelStatus},
 	}
 
 	for _, p := range perms {

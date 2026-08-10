@@ -106,6 +106,7 @@ func (p *DiscordProvider) Resources(_ context.Context) []func() resource.Resourc
 		guild.NewManagedServerResource,
 		guild.NewSystemChannelResource,
 		guild.NewServerWidgetResource,
+		guild.NewMessageResource,
 	}
 }
 
