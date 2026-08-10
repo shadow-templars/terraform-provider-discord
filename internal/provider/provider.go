@@ -92,6 +92,9 @@ func (p *DiscordProvider) Resources(_ context.Context) []func() resource.Resourc
 	return []func() resource.Resource{
 		channel.NewTextChannelResource,
 		channel.NewCategoryChannelResource,
+		channel.NewVoiceChannelResource,
+		channel.NewForumChannelResource,
+		channel.NewChannelPermissionResource,
 	}
 }
 

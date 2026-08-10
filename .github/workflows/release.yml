@@ -1,40 +1,35 @@
 name: Release
+
 on:
-  workflow_dispatch:
-    inputs:
-      new_version:
-        description: New version number without prefix. (e.g. "1.1.0", "2.0.0", and more)
-        type: string
-        required: true
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
 jobs:
   goreleaser:
-    name: Make a release on GitHub
-    permissions:
-      contents: write
+    name: Release
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           cache: true
           go-version-file: go.mod
-      - name: Add tag and push it
-        env:
-          NEW_VERSION: ${{ github.event.inputs.new_version }}
-        run: |
-          git tag v"$NEW_VERSION"
-          git push origin v"$NEW_VERSION"
+
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
-      - name: Git as GitHub Actions Bot
-        uses: Lucky3028/git-as-gha@48a4d96a17acfb1f4f54604785693b1f03ba1524 # v1.0.1
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
         with:
