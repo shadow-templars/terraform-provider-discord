@@ -13,6 +13,9 @@ import (
 
 	"github.com/shadow-templars/terraform-provider-discord/internal/client"
 	"github.com/shadow-templars/terraform-provider-discord/internal/service/channel"
+	discorddata "github.com/shadow-templars/terraform-provider-discord/internal/service/datasource"
+	"github.com/shadow-templars/terraform-provider-discord/internal/service/guild"
+	"github.com/shadow-templars/terraform-provider-discord/internal/service/role"
 )
 
 var _ provider.Provider = (*DiscordProvider)(nil)
@@ -95,9 +98,18 @@ func (p *DiscordProvider) Resources(_ context.Context) []func() resource.Resourc
 		channel.NewVoiceChannelResource,
 		channel.NewForumChannelResource,
 		channel.NewChannelPermissionResource,
+		channel.NewInviteResource,
+		channel.NewWebhookResource,
+		role.NewRoleResource,
+		guild.NewGuildStickerResource,
+		guild.NewManagedServerResource,
 	}
 }
 
 func (p *DiscordProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		discorddata.NewColorDataSource,
+		discorddata.NewPermissionDataSource,
+		discorddata.NewLocalImageDataSource,
+	}
 }
