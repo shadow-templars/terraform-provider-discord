@@ -102,6 +102,7 @@ func (p *DiscordProvider) Resources(_ context.Context) []func() resource.Resourc
 		channel.NewWebhookResource,
 		role.NewRoleResource,
 		role.NewRoleEveryoneResource,
+		role.NewMemberRolesResource,
 		guild.NewGuildStickerResource,
 		guild.NewManagedServerResource,
 		guild.NewSystemChannelResource,

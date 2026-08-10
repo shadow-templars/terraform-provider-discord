@@ -27,7 +27,7 @@ type WebhookResourceModel struct {
 	ID        types.String `tfsdk:"id"`
 	ChannelID types.String `tfsdk:"channel_id"`
 	Name      types.String `tfsdk:"name"`
-	Avatar    types.String `tfsdk:"avatar"`
+	Avatar    types.String `tfsdk:"avatar_data_uri"`
 	URL       types.String `tfsdk:"url"`
 	Token     types.String `tfsdk:"token"`
 }
@@ -59,7 +59,7 @@ func (r *WebhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Required:    true,
 				Description: "The name of the webhook (1-80 characters).",
 			},
-			"avatar": schema.StringAttribute{
+			"avatar_data_uri": schema.StringAttribute{
 				Optional:    true,
 				Description: "The avatar data URI for the webhook (data:image/...;base64,...).",
 			},
