@@ -1,1 +1,0 @@
-terraform import discord_news_channel.example "<channel id>"

@@ -1,1 +1,0 @@
-terraform import discord_managed_server.example "<server id>"

@@ -1,14 +1,20 @@
-CHANGELOG.md
-terraform-provider-discord
-*.tf
-!examples/**/*.tf
-.terraform.lock.hcl
-terraform.tfstate
-terraform.tfstate.backup
-
-.terraform/
-
-.idea/
-
-.env
+# Build artifacts
 dist/
+terraform-provider-discord
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Go
+vendor/
