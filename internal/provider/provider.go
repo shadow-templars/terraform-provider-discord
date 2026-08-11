@@ -108,6 +108,8 @@ func (p *DiscordProvider) Resources(_ context.Context) []func() resource.Resourc
 		guild.NewSystemChannelResource,
 		guild.NewServerWidgetResource,
 		guild.NewMessageResource,
+		guild.NewAutoModerationRuleResource,
+		guild.NewServerOnboardingResource,
 	}
 }
 
@@ -116,5 +118,6 @@ func (p *DiscordProvider) DataSources(_ context.Context) []func() datasource.Dat
 		discorddata.NewColorDataSource,
 		discorddata.NewPermissionDataSource,
 		discorddata.NewLocalImageDataSource,
+		discorddata.NewRoleDataSource,
 	}
 }
