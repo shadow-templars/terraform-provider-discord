@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/shadow-templars/terraform-provider-discord/internal/client"
+	"github.com/shadow-templars/terraform-provider-discord/internal/discordgox"
 	"github.com/shadow-templars/terraform-provider-discord/internal/service/channel"
 	discorddata "github.com/shadow-templars/terraform-provider-discord/internal/service/datasource"
 	"github.com/shadow-templars/terraform-provider-discord/internal/service/guild"
@@ -86,7 +87,7 @@ func (p *DiscordProvider) Configure(ctx context.Context, req provider.ConfigureR
 	}
 	session.UserAgent = "terraform-provider-discord/" + p.version
 
-	c := &client.DiscordClient{Session: session}
+	c := &client.DiscordClient{Session: discordgox.New(session)}
 	resp.DataSourceData = c
 	resp.ResourceData = c
 }

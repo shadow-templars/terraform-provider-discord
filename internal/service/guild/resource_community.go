@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/shadow-templars/terraform-provider-discord/internal/client"
+	"github.com/shadow-templars/terraform-provider-discord/internal/discordgox"
 )
 
 var (
@@ -34,6 +35,7 @@ type CommunityResourceModel struct {
 	ServerID               types.String `tfsdk:"server_id"`
 	RulesChannelID         types.String `tfsdk:"rules_channel_id"`
 	PublicUpdatesChannelID types.String `tfsdk:"public_updates_channel_id"`
+	SafetyAlertsChannelID  types.String `tfsdk:"safety_alerts_channel_id"`
 	PreferredLocale        types.String `tfsdk:"preferred_locale"`
 }
 
@@ -73,6 +75,10 @@ func (r *CommunityResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"public_updates_channel_id": schema.StringAttribute{
 				Required:    true,
 				Description: "Channel ID where Discord sends Community updates for admins and moderators. A role-restricted channel is recommended.",
+			},
+			"safety_alerts_channel_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "Channel ID where Discord sends safety alerts for admins and moderators. A role-restricted channel is recommended.",
 			},
 			"preferred_locale": schema.StringAttribute{
 				Optional:    true,
@@ -122,7 +128,7 @@ func (r *CommunityResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	guild, err := r.client.Session.Guild(state.ServerID.ValueString())
+	guild, err := r.client.Session.GuildWithExtras(state.ServerID.ValueString())
 	if err != nil {
 		if isNotFound(err) {
 			resp.State.RemoveResource(ctx)
@@ -132,8 +138,8 @@ func (r *CommunityResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	// Community being off means the resource no longer exists — drop it from
-	// state so a plan re-enables rather than silently drifting.
+	// Community being off means the resource no longer exists, so drop it from
+	// state and let a plan re-enable it.
 	if !hasCommunityFeature(guild.Features) {
 		resp.State.RemoveResource(ctx)
 		return
@@ -146,6 +152,9 @@ func (r *CommunityResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 	if guild.PublicUpdatesChannelID != "" {
 		state.PublicUpdatesChannelID = types.StringValue(guild.PublicUpdatesChannelID)
+	}
+	if guild.SafetyAlertsChannelID != "" {
+		state.SafetyAlertsChannelID = types.StringValue(guild.SafetyAlertsChannelID)
 	}
 	if guild.PreferredLocale != "" {
 		state.PreferredLocale = types.StringValue(guild.PreferredLocale)
@@ -211,14 +220,17 @@ func (r *CommunityResource) enable(plan *CommunityResourceModel, diags *diag.Dia
 		return
 	}
 
-	params := discordgo.GuildParams{
+	params := discordgox.GuildCommunityParams{
 		Features:               addCommunityFeature(guild.Features),
 		RulesChannelID:         plan.RulesChannelID.ValueString(),
 		PublicUpdatesChannelID: plan.PublicUpdatesChannelID.ValueString(),
-		PreferredLocale:        discordgo.Locale(plan.PreferredLocale.ValueString()),
+		PreferredLocale:        plan.PreferredLocale.ValueString(),
+	}
+	if !plan.SafetyAlertsChannelID.IsNull() && !plan.SafetyAlertsChannelID.IsUnknown() {
+		params.SafetyAlertsChannelID = plan.SafetyAlertsChannelID.ValueString()
 	}
 
-	if _, err := r.client.Session.GuildEdit(plan.ServerID.ValueString(), &params); err != nil {
+	if _, err := r.client.Session.GuildCommunityEdit(plan.ServerID.ValueString(), params); err != nil {
 		diags.AddError("Error Enabling Community", err.Error())
 	}
 }

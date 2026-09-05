@@ -4,11 +4,13 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+
+	"github.com/shadow-templars/terraform-provider-discord/internal/discordgox"
 )
 
 // syncChannelPermissions copies permission overwrites from the parent category
 // to the given channel.
-func syncChannelPermissions(session *discordgo.Session, channelID, parentID string) error {
+func syncChannelPermissions(session *discordgox.Client, channelID, parentID string) error {
 	parent, err := session.Channel(parentID)
 	if err != nil {
 		return err

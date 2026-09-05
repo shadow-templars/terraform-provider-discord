@@ -17,6 +17,7 @@ resource "discord_community" "example" {
   server_id                 = var.server_id
   rules_channel_id          = discord_text_channel.rules.id
   public_updates_channel_id = discord_text_channel.mod_updates.id
+  safety_alerts_channel_id  = discord_text_channel.mod_updates.id
   preferred_locale          = "en-US"
 
   lifecycle {
@@ -37,6 +38,7 @@ resource "discord_community" "example" {
 ### Optional
 
 - `preferred_locale` (String) The server's primary language (e.g. en-US). Used by Discord to customize features and in server discovery. Defaults to en-US.
+- `safety_alerts_channel_id` (String) Channel ID where Discord sends safety alerts for admins and moderators. A role-restricted channel is recommended.
 
 ### Read-Only
 

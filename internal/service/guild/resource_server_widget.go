@@ -2,10 +2,8 @@ package guild
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -13,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/shadow-templars/terraform-provider-discord/internal/client"
+	"github.com/shadow-templars/terraform-provider-discord/internal/discordgox"
 )
 
 var _ resource.Resource = (*ServerWidgetResource)(nil)
@@ -104,19 +103,9 @@ func (r *ServerWidgetResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	endpoint := discordgo.EndpointGuildWidget(state.ServerID.ValueString())
-	response, err := r.client.Session.RequestWithBucketID("GET", endpoint, nil, endpoint)
+	widget, err := r.client.Session.GuildWidget(state.ServerID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error Reading Server Widget", err.Error())
-		return
-	}
-
-	var widget struct {
-		Enabled   bool   `json:"enabled"`
-		ChannelID string `json:"channel_id"`
-	}
-	if err := json.Unmarshal(response, &widget); err != nil {
-		resp.Diagnostics.AddError("Error Parsing Widget Response", err.Error())
 		return
 	}
 
@@ -150,17 +139,12 @@ func (r *ServerWidgetResource) Delete(_ context.Context, _ resource.DeleteReques
 }
 
 func (r *ServerWidgetResource) apply(plan *ServerWidgetResourceModel) error {
-	data := struct {
-		Enabled   bool   `json:"enabled"`
-		ChannelID string `json:"channel_id,omitempty"`
-	}{
+	settings := discordgox.GuildWidgetSettings{
 		Enabled: plan.Enabled.ValueBool(),
 	}
 	if !plan.ChannelID.IsNull() && !plan.ChannelID.IsUnknown() {
-		data.ChannelID = plan.ChannelID.ValueString()
+		settings.ChannelID = plan.ChannelID.ValueString()
 	}
 
-	endpoint := discordgo.EndpointGuildWidget(plan.ServerID.ValueString())
-	_, err := r.client.Session.RequestWithBucketID("PATCH", endpoint, data, endpoint)
-	return err
+	return r.client.Session.GuildWidgetEdit(plan.ServerID.ValueString(), settings)
 }

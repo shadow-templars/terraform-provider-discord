@@ -1,19 +1,11 @@
 package guild
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"mime"
-	"mime/multipart"
-	"net/textproto"
 	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -125,30 +117,16 @@ func (r *GuildStickerResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	var body bytes.Buffer
-	writer := multipart.NewWriter(&body)
-	writer.WriteField("name", plan.Name.ValueString())
-	writer.WriteField("description", plan.Description.ValueString())
-	writer.WriteField("tags", plan.Tags.ValueString())
-
-	part, err := createFormFileWithContentType(writer, "file", filepath.Base(filePath))
-	if err != nil {
-		resp.Diagnostics.AddError("Error Creating Form File", err.Error())
-		return
-	}
-	part.Write(fileData)
-	writer.Close()
-
-	endpoint := discordgo.EndpointGuildStickers(plan.ServerID.ValueString())
-	response, err := r.client.Session.RequestRaw("POST", endpoint, writer.FormDataContentType(), body.Bytes(), endpoint, 0)
+	sticker, err := r.client.Session.GuildStickerCreate(
+		plan.ServerID.ValueString(),
+		plan.Name.ValueString(),
+		plan.Description.ValueString(),
+		plan.Tags.ValueString(),
+		filePath,
+		fileData,
+	)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Creating Guild Sticker", err.Error())
-		return
-	}
-
-	var sticker discordgo.Sticker
-	if err := json.Unmarshal(response, &sticker); err != nil {
-		resp.Diagnostics.AddError("Error Parsing Sticker Response", err.Error())
 		return
 	}
 
@@ -170,20 +148,13 @@ func (r *GuildStickerResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	endpoint := discordgo.EndpointGuildSticker(state.ServerID.ValueString(), state.ID.ValueString())
-	response, err := r.client.Session.RequestWithBucketID("GET", endpoint, nil, endpoint)
+	sticker, err := r.client.Session.GuildSticker(state.ServerID.ValueString(), state.ID.ValueString())
 	if err != nil {
 		if isNotFound(err) {
 			resp.State.RemoveResource(ctx)
 			return
 		}
 		resp.Diagnostics.AddError("Error Reading Guild Sticker", err.Error())
-		return
-	}
-
-	var sticker discordgo.Sticker
-	if err := json.Unmarshal(response, &sticker); err != nil {
-		resp.Diagnostics.AddError("Error Parsing Sticker Response", err.Error())
 		return
 	}
 
@@ -202,18 +173,13 @@ func (r *GuildStickerResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	data := struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Tags        string `json:"tags"`
-	}{
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-		Tags:        plan.Tags.ValueString(),
-	}
-
-	endpoint := discordgo.EndpointGuildSticker(plan.ServerID.ValueString(), plan.ID.ValueString())
-	_, err := r.client.Session.RequestWithBucketID("PATCH", endpoint, data, endpoint)
+	err := r.client.Session.GuildStickerEdit(
+		plan.ServerID.ValueString(),
+		plan.ID.ValueString(),
+		plan.Name.ValueString(),
+		plan.Description.ValueString(),
+		plan.Tags.ValueString(),
+	)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Updating Guild Sticker", err.Error())
 		return
@@ -229,8 +195,7 @@ func (r *GuildStickerResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	endpoint := discordgo.EndpointGuildSticker(state.ServerID.ValueString(), state.ID.ValueString())
-	_, err := r.client.Session.RequestWithBucketID("DELETE", endpoint, nil, endpoint)
+	err := r.client.Session.GuildStickerDelete(state.ServerID.ValueString(), state.ID.ValueString())
 	if err != nil && !isNotFound(err) {
 		resp.Diagnostics.AddError("Error Deleting Guild Sticker", err.Error())
 		return
@@ -251,16 +216,9 @@ func (r *GuildStickerResource) ImportState(ctx context.Context, req resource.Imp
 	serverID := parts[0]
 	stickerID := parts[1]
 
-	endpoint := discordgo.EndpointGuildSticker(serverID, stickerID)
-	response, err := r.client.Session.RequestWithBucketID("GET", endpoint, nil, endpoint)
+	sticker, err := r.client.Session.GuildSticker(serverID, stickerID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Importing Guild Sticker", err.Error())
-		return
-	}
-
-	var sticker discordgo.Sticker
-	if err := json.Unmarshal(response, &sticker); err != nil {
-		resp.Diagnostics.AddError("Error Parsing Sticker Response", err.Error())
 		return
 	}
 
@@ -275,17 +233,4 @@ func (r *GuildStickerResource) ImportState(ctx context.Context, req resource.Imp
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-}
-
-func createFormFileWithContentType(w *multipart.Writer, fieldname, filename string) (io.Writer, error) {
-	contentType := mime.TypeByExtension(filepath.Ext(filename))
-	if contentType == "" {
-		contentType = "application/octet-stream"
-	}
-
-	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, fieldname, filename))
-	h.Set("Content-Type", contentType)
-
-	return w.CreatePart(h)
 }
