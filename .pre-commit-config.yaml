@@ -1,0 +1,13 @@
+repos:
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.18.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: gofmt
+        entry: bash -c 'unformatted=$(gofmt -l "$@"); if [ -n "$unformatted" ]; then echo "gofmt needs to run on:"; echo "$unformatted"; exit 1; fi' --
+        language: system
+        types: [go]

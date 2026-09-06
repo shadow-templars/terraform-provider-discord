@@ -17,6 +17,15 @@ Documentation under `docs/` is generated from the schema with `tfplugindocs`;
 edit schema descriptions and example files rather than the generated Markdown,
 then run `go generate ./...`.
 
+### Git hooks
+
+This repo uses [pre-commit](https://pre-commit.com) for `gofmt` and Conventional
+Commit validation. Enable it once after cloning:
+
+```bash
+pre-commit install --hook-type pre-commit --hook-type commit-msg
+```
+
 ## Project structure
 
 ```
