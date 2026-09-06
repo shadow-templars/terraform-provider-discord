@@ -1,8 +1,11 @@
 # Terraform Provider: Discord
 
-A Terraform/OpenTofu provider for managing Discord servers declaratively.
+[![Release](https://img.shields.io/github/v/release/shadow-templars/terraform-provider-discord)](https://github.com/shadow-templars/terraform-provider-discord/releases)
+[![Build](https://img.shields.io/github/actions/workflow/status/shadow-templars/terraform-provider-discord/release.yml)](https://github.com/shadow-templars/terraform-provider-discord/actions/workflows/release.yml)
+[![License](https://img.shields.io/github/license/shadow-templars/terraform-provider-discord)](LICENSE)
 
-> **v3 rewrite** — This is a complete rewrite using the [Terraform Plugin Framework](https://developer.hashicorp.com/terraform/plugin/framework), replacing the legacy SDK v2 implementation.
+A Terraform/OpenTofu provider for managing Discord servers declaratively, built
+on the [Terraform Plugin Framework](https://developer.hashicorp.com/terraform/plugin/framework).
 
 ## Requirements
 
@@ -17,130 +20,72 @@ terraform {
   required_providers {
     discord = {
       source  = "shadow-templars/discord"
-      version = "~> 3.0"
+      version = "~> 3.2"
     }
   }
 }
 
 provider "discord" {
-  token = var.discord_bot_token  # or set DISCORD_TOKEN env var
+  token = var.discord_bot_token # or set DISCORD_TOKEN
 }
 ```
 
-## Resources
+## Documentation
 
-| Resource                       | Group    | Description                                                                    |
-| ------------------------------ | -------- | ------------------------------------------------------------------------------ |
-| `discord_text_channel`         | Channels | Manage text channels                                                           |
-| `discord_voice_channel`        | Channels | Manage voice channels                                                          |
-| `discord_category_channel`     | Channels | Manage category channels                                                       |
-| `discord_forum_channel`        | Channels | Manage forum channels                                                          |
-| `discord_channel_permission`   | Channels | Manage channel permission overwrites                                           |
-| `discord_invite`               | Channels | Manage invites                                                                 |
-| `discord_webhook`              | Channels | Manage channel webhooks                                                        |
-| `discord_role`                 | Roles    | Manage roles                                                                   |
-| `discord_role_everyone`        | Roles    | Manage the `@everyone` role                                                    |
-| `discord_member_roles`         | Roles    | Assign roles to a member                                                       |
-| `discord_managed_server`       | Server   | Manage settings of an existing server                                          |
-| `discord_community`            | Server   | Enable and configure the Community feature (see [Community](#community) below) |
-| `discord_system_channel`       | Server   | Manage the system channel                                                      |
-| `discord_server_widget`        | Server   | Manage the server widget                                                       |
-| `discord_server_onboarding`    | Server   | Manage the onboarding flow                                                     |
-| `discord_message`              | Server   | Manage messages (e.g. welcome embeds)                                          |
-| `discord_guild_sticker`        | Server   | Manage custom stickers                                                         |
-| `discord_auto_moderation_rule` | Server   | Manage AutoMod rules                                                           |
+The full reference for every resource and data source is generated from the
+schema and published on the Terraform Registry:
+
+**<https://registry.terraform.io/providers/shadow-templars/discord/latest/docs>**
+
+The same pages live in [`docs/`](docs/) in this repository, generated with
+`tfplugindocs` (see [Development](#development)). This README covers what the
+generated reference does not: setup, architecture, and the conceptual notes
+below.
 
 ## Community
 
-The `discord_community` resource enables and configures the Discord **Community** feature. Its existence is the enablement signal: creating it turns a regular server into a Community server, and destroying it turns Community off.
+`discord_community` is the one resource whose behaviour needs more than a field
+reference, so its concepts are documented here; see the
+[generated docs](https://registry.terraform.io/providers/shadow-templars/discord/latest/docs/resources/community)
+for the field-by-field reference.
 
-```hcl
-resource "discord_community" "example" {
-  server_id                 = var.server_id
-  rules_channel_id          = discord_text_channel.rules.id
-  public_updates_channel_id = discord_text_channel.mod_updates.id
-  preferred_locale          = "en-US" # optional, defaults to en-US
-}
-```
+- **Existence is the enablement signal.** Creating the resource turns a regular
+  server into a Community server; destroying it turns Community off.
+- **Preconditions.** Discord requires `verification_level >= 1` and
+  `explicit_content_filter = 2` (set via `discord_managed_server`) before
+  Community can be enabled. If unmet, the apply fails.
+- **Announcement-channel dependency.** Announcement channels
+  (`discord_news_channel`, type 5) need the `NEWS` feature, granted only once
+  `COMMUNITY` is enabled, so they must `depends_on` this resource.
+- **Destroying is consequential.** It strips the `COMMUNITY` feature, which also
+  tears down the welcome screen and onboarding prompts and breaks announcement
+  channels. Guard it with `lifecycle { prevent_destroy = true }` in production.
 
-### Managed fields
+### Not managed
 
-These mirror Discord's **Community Settings** page:
+- **Server Description**: owned by `discord_managed_server`; managing it in two
+  resources would make them fight on every plan.
+- **Membership Screening** (the rules-acceptance gate): Discord has withdrawn
+  the get/edit API docs while the object is being reworked, so it cannot be
+  managed responsibly yet.
+- **Age-Restriction** (`nsfw_level`): readable but absent from Discord's Modify
+  Guild parameters, so it cannot be written via the API.
 
-| Field                       | Community Settings label    | Notes                                                                            |
-| --------------------------- | --------------------------- | -------------------------------------------------------------------------------- |
-| `rules_channel_id`          | Rules or guidelines channel | Must be viewable by `@everyone`.                                                 |
-| `public_updates_channel_id` | Community Updates Channel   | Where Discord posts admin/mod notices. A role-restricted channel is recommended. |
-| `preferred_locale`          | Server Primary Language     | Defaults to `en-US`.                                                             |
+## Contributing
 
-### Deliberately not managed
+See [CONTRIBUTING.md](CONTRIBUTING.md) for building, testing, regenerating docs,
+the project layout, and the `discordgox` extension layer.
 
-- **Safety Notifications Channel** (`safety_alerts_channel_id`): not exposed by discordgo v0.29.0, so it cannot be managed yet. Planned for a later release. Set it manually in Server Settings for now.
-- **Server Description**: intentionally owned by `discord_managed_server`. Managing the same field in two resources would cause them to fight on every plan.
+## Migration from the upstream provider
 
-### Preconditions
+This provider began as a fork of
+[Lucky3028/terraform-provider-discord](https://github.com/Lucky3028/terraform-provider-discord)
+and was rewritten onto the Plugin Framework. To migrate:
 
-Discord requires the server to already have `verification_level >= 1` and `explicit_content_filter = 2` before Community can be enabled (set via `discord_managed_server`). If unmet, the API rejects the edit and the apply fails.
-
-### Dependency: announcement channels
-
-Announcement channels (`discord_news_channel`, Discord type 5) require the `NEWS` feature, which is only granted once `COMMUNITY` is enabled. Any announcement channel must therefore `depends_on` the `discord_community` resource.
-
-### Destroying
-
-Destroying `discord_community` **disables Community** (strips the `COMMUNITY` feature). This is consequential: it also tears down the welcome screen, onboarding prompts, and breaks announcement channels. In production, guard the resource with `lifecycle { prevent_destroy = true }`.
-
-### Importing
-
-The resource ID is the server ID:
-
-```bash
-tofu import discord_community.example <server_id>
-```
-
-## Data Sources
-
-| Data source           | Description                                    |
-| --------------------- | ---------------------------------------------- |
-| `discord_color`       | Resolve a color name/hex to its integer value  |
-| `discord_permission`  | Compute permission bit values                  |
-| `discord_local_image` | Load a local image as a data URI               |
-| `discord_role`        | Look up an existing role                       |
-
-## Development
-
-```bash
-# Build
-go build ./...
-
-# Run tests
-go test ./...
-
-# Install locally for testing
-go install .
-```
-
-### Project Structure
-
-```
-├── main.go                          # Provider server entrypoint
-├── internal/
-│   ├── client/                      # Discord API client wrapper
-│   ├── provider/                    # Provider configuration and registration
-│   └── service/
-│       └── channel/                 # Channel resources (text, category, voice, forum)
-```
-
-## Migration from v2
-
-This provider is a fork of [Lucky3028/terraform-provider-discord](https://github.com/Lucky3028/terraform-provider-discord) rewritten from scratch using the Plugin Framework. The resource schemas are designed to be compatible where possible, but this is a new major version with potential breaking changes.
-
-To migrate:
-
-1. Update `required_providers` source to `shadow-templars/discord`
-2. Run `tofu state replace-provider Lucky3028/discord shadow-templars/discord`
-3. Run `tofu init -upgrade`
-4. Run `tofu plan` to verify no unexpected changes
+1. Point `required_providers` at `shadow-templars/discord`.
+2. Run `tofu state replace-provider Lucky3028/discord shadow-templars/discord`.
+3. Run `tofu init -upgrade`.
+4. Run `tofu plan` and confirm no unexpected changes.
 
 ## License
 
