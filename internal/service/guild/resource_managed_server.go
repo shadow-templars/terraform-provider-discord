@@ -198,5 +198,3 @@ func (r *ManagedServerResource) applySettings(_ context.Context, plan *ManagedSe
 		diags.AddError("Error Updating Server Settings", err.Error())
 	}
 }
-
-

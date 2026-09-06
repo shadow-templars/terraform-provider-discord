@@ -18,8 +18,8 @@ var _ datasource.DataSource = (*LocalImageDataSource)(nil)
 type LocalImageDataSource struct{}
 
 type LocalImageDataSourceModel struct {
-	File     types.String `tfsdk:"file"`
-	DataURI  types.String `tfsdk:"data_uri"`
+	File    types.String `tfsdk:"file"`
+	DataURI types.String `tfsdk:"data_uri"`
 }
 
 func NewLocalImageDataSource() datasource.DataSource {
@@ -46,7 +46,8 @@ func (d *LocalImageDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 	}
 }
 
-func (d *LocalImageDataSource) Configure(_ context.Context, _ datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {}
+func (d *LocalImageDataSource) Configure(_ context.Context, _ datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
+}
 
 func (d *LocalImageDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data LocalImageDataSourceModel
