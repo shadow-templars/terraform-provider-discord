@@ -2,6 +2,12 @@
 
 All notable changes to this provider are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2026-09-06
+
+### Added
+
+- `mention_total_limit` and `mention_raid_protection_enabled` on `discord_auto_moderation_rule` trigger metadata, enabling MENTION_SPAM (trigger type 5) rules. `mention_raid_protection_enabled` is applied and read through `discordgox`, since discordgo's `AutoModerationTriggerMetadata` does not model it in v0.29.0.
+
 ## [3.2.0] - 2026-09-05
 
 ### Added
@@ -30,6 +36,7 @@ All notable changes to this provider are documented here. The format is based on
 
 - Complete rewrite onto the Terraform Plugin Framework, replacing the legacy SDKv2 implementation. See the README migration notes for moving from the upstream `Lucky3028/discord` provider.
 
+[3.3.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.3.0
 [3.2.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.2.0
 [3.1.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.1.0
 [3.0.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.0.0

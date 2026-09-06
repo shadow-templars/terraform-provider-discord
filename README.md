@@ -19,7 +19,7 @@ terraform {
   required_providers {
     discord = {
       source  = "shadow-templars/discord"
-      version = "~> 3.2"
+      version = "~> 3.3"
     }
   }
 }

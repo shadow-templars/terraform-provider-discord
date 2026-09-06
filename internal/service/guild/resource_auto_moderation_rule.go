@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/shadow-templars/terraform-provider-discord/internal/client"
+	"github.com/shadow-templars/terraform-provider-discord/internal/discordgox"
 )
 
 var (
@@ -40,10 +41,12 @@ type autoModActionModel struct {
 }
 
 type autoModTriggerMetadataModel struct {
-	KeywordFilter types.List `tfsdk:"keyword_filter"`
-	RegexPatterns types.List `tfsdk:"regex_patterns"`
-	Presets       types.List `tfsdk:"presets"`
-	AllowList     types.List `tfsdk:"allow_list"`
+	KeywordFilter                types.List  `tfsdk:"keyword_filter"`
+	RegexPatterns                types.List  `tfsdk:"regex_patterns"`
+	Presets                      types.List  `tfsdk:"presets"`
+	AllowList                    types.List  `tfsdk:"allow_list"`
+	MentionTotalLimit            types.Int64 `tfsdk:"mention_total_limit"`
+	MentionRaidProtectionEnabled types.Bool  `tfsdk:"mention_raid_protection_enabled"`
 }
 
 type autoModRuleModel struct {
@@ -120,6 +123,14 @@ func (r *AutoModerationRuleResource) Schema(_ context.Context, _ resource.Schema
 						Optional:    true,
 						ElementType: types.StringType,
 						Description: "Substrings which should not trigger the rule.",
+					},
+					"mention_total_limit": schema.Int64Attribute{
+						Optional:    true,
+						Description: "Total unique role and user mentions allowed per message (trigger type 5, max 50).",
+					},
+					"mention_raid_protection_enabled": schema.BoolAttribute{
+						Optional:    true,
+						Description: "Whether to automatically detect mention raids (trigger type 5).",
 					},
 				},
 			},
@@ -299,10 +310,10 @@ func (r *AutoModerationRuleResource) ImportState(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-// buildAPIRule converts the Terraform model to a discordgo AutoModerationRule for create/update.
-func (r *AutoModerationRuleResource) buildAPIRule(ctx context.Context, plan *autoModRuleModel, diags *diag.Diagnostics) *discordgo.AutoModerationRule {
+// buildAPIRule converts the Terraform model to a discordgox AutoModRule for create/update.
+func (r *AutoModerationRuleResource) buildAPIRule(ctx context.Context, plan *autoModRuleModel, diags *diag.Diagnostics) discordgox.AutoModRule {
 	enabled := plan.Enabled.ValueBool()
-	apiRule := &discordgo.AutoModerationRule{
+	apiRule := discordgox.AutoModRule{
 		Name:        plan.Name.ValueString(),
 		EventType:   discordgo.AutoModerationRuleEventType(plan.EventType.ValueInt64()),
 		TriggerType: discordgo.AutoModerationRuleTriggerType(plan.TriggerType.ValueInt64()),
@@ -311,7 +322,7 @@ func (r *AutoModerationRuleResource) buildAPIRule(ctx context.Context, plan *aut
 
 	// Trigger metadata
 	if plan.TriggerMetadata != nil {
-		meta := &discordgo.AutoModerationTriggerMetadata{}
+		meta := &discordgox.AutoModTriggerMetadata{}
 
 		if !plan.TriggerMetadata.KeywordFilter.IsNull() && !plan.TriggerMetadata.KeywordFilter.IsUnknown() {
 			var keywords []string
@@ -339,6 +350,15 @@ func (r *AutoModerationRuleResource) buildAPIRule(ctx context.Context, plan *aut
 			var allowList []string
 			diags.Append(plan.TriggerMetadata.AllowList.ElementsAs(ctx, &allowList, false)...)
 			meta.AllowList = &allowList
+		}
+
+		if !plan.TriggerMetadata.MentionTotalLimit.IsNull() && !plan.TriggerMetadata.MentionTotalLimit.IsUnknown() {
+			meta.MentionTotalLimit = int(plan.TriggerMetadata.MentionTotalLimit.ValueInt64())
+		}
+
+		if !plan.TriggerMetadata.MentionRaidProtectionEnabled.IsNull() && !plan.TriggerMetadata.MentionRaidProtectionEnabled.IsUnknown() {
+			v := plan.TriggerMetadata.MentionRaidProtectionEnabled.ValueBool()
+			meta.MentionRaidProtectionEnabled = &v
 		}
 
 		apiRule.TriggerMetadata = meta
@@ -384,8 +404,8 @@ func (r *AutoModerationRuleResource) buildAPIRule(ctx context.Context, plan *aut
 	return apiRule
 }
 
-// refreshState maps a discordgo AutoModerationRule to the Terraform state model.
-func (r *AutoModerationRuleResource) refreshState(_ context.Context, rule *discordgo.AutoModerationRule, state *autoModRuleModel) {
+// refreshState maps a discordgox AutoModRule to the Terraform state model.
+func (r *AutoModerationRuleResource) refreshState(_ context.Context, rule *discordgox.AutoModRule, state *autoModRuleModel) {
 	state.ID = types.StringValue(rule.ID)
 	state.Name = types.StringValue(rule.Name)
 	state.EventType = types.Int64Value(int64(rule.EventType))
@@ -439,6 +459,18 @@ func (r *AutoModerationRuleResource) refreshState(_ context.Context, rule *disco
 			meta.AllowList, _ = types.ListValue(types.StringType, vals)
 		} else {
 			meta.AllowList = types.ListNull(types.StringType)
+		}
+
+		if rule.TriggerMetadata.MentionTotalLimit > 0 {
+			meta.MentionTotalLimit = types.Int64Value(int64(rule.TriggerMetadata.MentionTotalLimit))
+		} else {
+			meta.MentionTotalLimit = types.Int64Null()
+		}
+
+		if rule.TriggerMetadata.MentionRaidProtectionEnabled != nil {
+			meta.MentionRaidProtectionEnabled = types.BoolValue(*rule.TriggerMetadata.MentionRaidProtectionEnabled)
+		} else {
+			meta.MentionRaidProtectionEnabled = types.BoolNull()
 		}
 
 		state.TriggerMetadata = meta

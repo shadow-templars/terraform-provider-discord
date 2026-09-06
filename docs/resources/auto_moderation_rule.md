@@ -63,5 +63,7 @@ Optional:
 
 - `allow_list` (List of String) Substrings which should not trigger the rule.
 - `keyword_filter` (List of String) Keywords to filter (max 1000, each max 60 chars).
+- `mention_raid_protection_enabled` (Boolean) Whether to automatically detect mention raids (trigger type 5).
+- `mention_total_limit` (Number) Total unique role and user mentions allowed per message (trigger type 5, max 50).
 - `presets` (List of Number) Preset keyword lists (1 = PROFANITY, 2 = SEXUAL_CONTENT, 3 = SLURS).
 - `regex_patterns` (List of String) Regex patterns to match (max 10, each max 260 chars).
