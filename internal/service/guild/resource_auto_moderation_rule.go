@@ -320,7 +320,6 @@ func (r *AutoModerationRuleResource) buildAPIRule(ctx context.Context, plan *aut
 		Enabled:     &enabled,
 	}
 
-	// Trigger metadata
 	if plan.TriggerMetadata != nil {
 		meta := &discordgox.AutoModTriggerMetadata{}
 
@@ -364,7 +363,6 @@ func (r *AutoModerationRuleResource) buildAPIRule(ctx context.Context, plan *aut
 		apiRule.TriggerMetadata = meta
 	}
 
-	// Actions
 	actions := make([]discordgo.AutoModerationAction, len(plan.Actions))
 	for i, a := range plan.Actions {
 		action := discordgo.AutoModerationAction{
@@ -387,14 +385,12 @@ func (r *AutoModerationRuleResource) buildAPIRule(ctx context.Context, plan *aut
 	}
 	apiRule.Actions = actions
 
-	// Exempt roles
 	if !plan.ExemptRoles.IsNull() && !plan.ExemptRoles.IsUnknown() {
 		var roles []string
 		diags.Append(plan.ExemptRoles.ElementsAs(ctx, &roles, false)...)
 		apiRule.ExemptRoles = &roles
 	}
 
-	// Exempt channels
 	if !plan.ExemptChannels.IsNull() && !plan.ExemptChannels.IsUnknown() {
 		var channels []string
 		diags.Append(plan.ExemptChannels.ElementsAs(ctx, &channels, false)...)
@@ -417,7 +413,6 @@ func (r *AutoModerationRuleResource) refreshState(_ context.Context, rule *disco
 		state.Enabled = types.BoolValue(true)
 	}
 
-	// Trigger metadata
 	if rule.TriggerMetadata != nil {
 		meta := &autoModTriggerMetadataModel{}
 
@@ -473,18 +468,25 @@ func (r *AutoModerationRuleResource) refreshState(_ context.Context, rule *disco
 			meta.MentionRaidProtectionEnabled = types.BoolNull()
 		}
 
-		state.TriggerMetadata = meta
+		// Collapse Discord's empty metadata object to null to match config that omits it.
+		if meta.KeywordFilter.IsNull() && meta.RegexPatterns.IsNull() &&
+			meta.Presets.IsNull() && meta.AllowList.IsNull() &&
+			meta.MentionTotalLimit.IsNull() && meta.MentionRaidProtectionEnabled.IsNull() {
+			state.TriggerMetadata = nil
+		} else {
+			state.TriggerMetadata = meta
+		}
 	} else {
 		state.TriggerMetadata = nil
 	}
 
-	// Actions
 	state.Actions = make([]autoModActionModel, len(rule.Actions))
 	for i, a := range rule.Actions {
 		am := autoModActionModel{
 			Type: types.Int64Value(int64(a.Type)),
 		}
-		if a.Metadata != nil {
+		// Skip Discord's empty metadata object to match config that omits it.
+		if a.Metadata != nil && (a.Metadata.ChannelID != "" || a.Metadata.Duration != 0 || a.Metadata.CustomMessage != "") {
 			am.Metadata = &autoModActionMetadataModel{
 				ChannelID:       types.StringValue(a.Metadata.ChannelID),
 				DurationSeconds: types.Int64Value(int64(a.Metadata.Duration)),
@@ -494,7 +496,6 @@ func (r *AutoModerationRuleResource) refreshState(_ context.Context, rule *disco
 		state.Actions[i] = am
 	}
 
-	// Exempt roles
 	if rule.ExemptRoles != nil && len(*rule.ExemptRoles) > 0 {
 		vals := make([]attr.Value, len(*rule.ExemptRoles))
 		for i, v := range *rule.ExemptRoles {
@@ -505,7 +506,6 @@ func (r *AutoModerationRuleResource) refreshState(_ context.Context, rule *disco
 		state.ExemptRoles = types.ListNull(types.StringType)
 	}
 
-	// Exempt channels
 	if rule.ExemptChannels != nil && len(*rule.ExemptChannels) > 0 {
 		vals := make([]attr.Value, len(*rule.ExemptChannels))
 		for i, v := range *rule.ExemptChannels {

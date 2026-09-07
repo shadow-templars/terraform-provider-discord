@@ -2,6 +2,12 @@
 
 All notable changes to this provider are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.1] - 2026-09-07
+
+### Fixed
+
+- `discord_auto_moderation_rule`: avoid a "Provider produced inconsistent result after apply" error on rules without trigger metadata or action metadata (e.g. SPAM rules, BLOCK_MESSAGE actions). Discord returns empty metadata objects, which are now collapsed to null to match a configuration that omits them.
+
 ## [3.3.0] - 2026-09-06
 
 ### Added
