@@ -55,7 +55,7 @@ func (d *ColorDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 
 	hex := strings.TrimPrefix(data.Hex.ValueString(), "#")
-	dec, err := strconv.ParseInt(hex, 16, 64)
+	dec, err := parseHexColor(hex)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Invalid Hex Color",
@@ -66,4 +66,8 @@ func (d *ColorDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	data.Dec = types.Int64Value(dec)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func parseHexColor(hex string) (int64, error) {
+	return strconv.ParseInt(strings.TrimPrefix(hex, "#"), 16, 64)
 }

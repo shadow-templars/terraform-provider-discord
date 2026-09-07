@@ -485,13 +485,22 @@ func (r *AutoModerationRuleResource) refreshState(_ context.Context, rule *disco
 		am := autoModActionModel{
 			Type: types.Int64Value(int64(a.Type)),
 		}
-		// Skip Discord's empty metadata object to match config that omits it.
 		if a.Metadata != nil && (a.Metadata.ChannelID != "" || a.Metadata.Duration != 0 || a.Metadata.CustomMessage != "") {
-			am.Metadata = &autoModActionMetadataModel{
-				ChannelID:       types.StringValue(a.Metadata.ChannelID),
-				DurationSeconds: types.Int64Value(int64(a.Metadata.Duration)),
-				CustomMessage:   types.StringValue(a.Metadata.CustomMessage),
+			meta := &autoModActionMetadataModel{
+				ChannelID:       types.StringNull(),
+				DurationSeconds: types.Int64Null(),
+				CustomMessage:   types.StringNull(),
 			}
+			if a.Metadata.ChannelID != "" {
+				meta.ChannelID = types.StringValue(a.Metadata.ChannelID)
+			}
+			if a.Metadata.Duration != 0 {
+				meta.DurationSeconds = types.Int64Value(int64(a.Metadata.Duration))
+			}
+			if a.Metadata.CustomMessage != "" {
+				meta.CustomMessage = types.StringValue(a.Metadata.CustomMessage)
+			}
+			am.Metadata = meta
 		}
 		state.Actions[i] = am
 	}
