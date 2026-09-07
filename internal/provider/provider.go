@@ -64,7 +64,6 @@ func (p *DiscordProvider) Configure(ctx context.Context, req provider.ConfigureR
 		return
 	}
 
-	// Resolve token: config value takes precedence over environment variable.
 	token := config.Token.ValueString()
 	if token == "" {
 		token = os.Getenv("DISCORD_TOKEN")

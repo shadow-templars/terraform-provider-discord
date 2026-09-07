@@ -159,7 +159,6 @@ func (r *ChannelPermissionResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	// Find the matching permission overwrite.
 	var found *discordgo.PermissionOverwrite
 	for _, po := range ch.PermissionOverwrites {
 		if po.ID == state.OverwriteID.ValueString() {
@@ -177,7 +176,6 @@ func (r *ChannelPermissionResource) Read(ctx context.Context, req resource.ReadR
 	state.Allow = types.Int64Value(found.Allow)
 	state.Deny = types.Int64Value(found.Deny)
 
-	// Map the type back from discordgo's int to our string.
 	switch found.Type {
 	case discordgo.PermissionOverwriteTypeRole:
 		state.Type = types.StringValue("role")

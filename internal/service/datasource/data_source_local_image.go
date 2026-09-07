@@ -67,10 +67,8 @@ func (d *LocalImageDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	// Detect MIME type from content.
 	mimeType := http.DetectContentType(content)
 
-	// Support common image extensions as fallback.
 	switch filepath.Ext(filePath) {
 	case ".gif":
 		mimeType = "image/gif"

@@ -256,14 +256,12 @@ func (r *ServerOnboardingResource) buildAPIOnboarding(ctx context.Context, plan 
 		Mode:    &mode,
 	}
 
-	// Default channel IDs
 	if !plan.DefaultChannelIDs.IsNull() && !plan.DefaultChannelIDs.IsUnknown() {
 		var channelIDs []string
 		diags.Append(plan.DefaultChannelIDs.ElementsAs(ctx, &channelIDs, false)...)
 		onboarding.DefaultChannelIDs = channelIDs
 	}
 
-	// Prompts
 	if len(plan.Prompts) > 0 {
 		prompts := make([]discordgo.GuildOnboardingPrompt, len(plan.Prompts))
 		for i, p := range plan.Prompts {
@@ -281,7 +279,6 @@ func (r *ServerOnboardingResource) buildAPIOnboarding(ctx context.Context, plan 
 				prompt.Type = discordgo.GuildOnboardingPromptTypeDropdown
 			}
 
-			// Options
 			prompt.Options = make([]discordgo.GuildOnboardingPromptOption, len(p.Options))
 			for j, o := range p.Options {
 				opt := discordgo.GuildOnboardingPromptOption{
@@ -341,7 +338,6 @@ func (r *ServerOnboardingResource) refreshState(_ context.Context, onboarding *d
 		state.Mode = types.Int64Value(0)
 	}
 
-	// Default channel IDs
 	if len(onboarding.DefaultChannelIDs) > 0 {
 		vals := make([]attr.Value, len(onboarding.DefaultChannelIDs))
 		for i, v := range onboarding.DefaultChannelIDs {
@@ -352,7 +348,6 @@ func (r *ServerOnboardingResource) refreshState(_ context.Context, onboarding *d
 		state.DefaultChannelIDs = types.ListNull(types.StringType)
 	}
 
-	// Prompts
 	if onboarding.Prompts != nil && len(*onboarding.Prompts) > 0 {
 		prompts := *onboarding.Prompts
 		state.Prompts = make([]onboardingPromptModel, len(prompts))

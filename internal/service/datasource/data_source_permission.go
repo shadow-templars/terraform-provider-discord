@@ -211,7 +211,6 @@ func (d *PermissionDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	var allow, deny int64
 
-	// Map each permission field to its bit flag.
 	perms := []struct {
 		value types.String
 		bit   int64

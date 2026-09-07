@@ -45,7 +45,6 @@ func (d *ColorDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 }
 
 func (d *ColorDataSource) Configure(_ context.Context, _ datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
-	// No client needed — this is a pure computation.
 }
 
 func (d *ColorDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

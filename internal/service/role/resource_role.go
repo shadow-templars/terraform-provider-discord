@@ -146,7 +146,6 @@ func (r *RoleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	plan.ID = types.StringValue(role.ID)
 	plan.Position = types.Int64Value(int64(role.Position))
 
-	// Set position if specified.
 	if !plan.Position.IsNull() && !plan.Position.IsUnknown() {
 		desiredPos := int(plan.Position.ValueInt64())
 		if role.Position != desiredPos {
@@ -227,7 +226,6 @@ func (r *RoleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	plan.Position = types.Int64Value(int64(role.Position))
 
-	// Update position if specified and different.
 	if !plan.Position.IsNull() && !plan.Position.IsUnknown() {
 		desiredPos := int(plan.Position.ValueInt64())
 		if role.Position != desiredPos {

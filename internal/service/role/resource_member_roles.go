@@ -165,7 +165,6 @@ func (r *MemberRolesResource) Read(ctx context.Context, req resource.ReadRequest
 		memberRoleSet[roleID] = true
 	}
 
-	// Filter to only roles that still exist on the member.
 	var remaining []MemberRoleModel
 	for _, roleID := range configuredRoleIDs {
 		if memberRoleSet[roleID] {
@@ -178,7 +177,6 @@ func (r *MemberRolesResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	// Rebuild the set.
 	roleSet, diags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: memberRoleAttrTypes}, remaining)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -212,7 +210,6 @@ func (r *MemberRolesResource) Update(ctx context.Context, req resource.UpdateReq
 		newSet[id] = true
 	}
 
-	// Add new roles.
 	for _, id := range newRoles {
 		if !oldSet[id] {
 			err := r.client.Session.GuildMemberRoleAdd(plan.ServerID.ValueString(), plan.UserID.ValueString(), id)
@@ -223,7 +220,6 @@ func (r *MemberRolesResource) Update(ctx context.Context, req resource.UpdateReq
 		}
 	}
 
-	// Remove old roles.
 	for _, id := range oldRoles {
 		if !newSet[id] {
 			err := r.client.Session.GuildMemberRoleRemove(plan.ServerID.ValueString(), plan.UserID.ValueString(), id)

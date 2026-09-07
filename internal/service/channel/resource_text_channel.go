@@ -157,7 +157,6 @@ func (r *TextChannelResource) Create(ctx context.Context, req resource.CreateReq
 	plan.ID = types.StringValue(ch.ID)
 	plan.Position = types.Int64Value(int64(ch.Position))
 
-	// Sync permissions with category if requested.
 	if plan.SyncPermsWithCategory.ValueBool() && params.ParentID != "" {
 		if err := syncChannelPermissions(r.client.Session, ch.ID, params.ParentID); err != nil {
 			resp.Diagnostics.AddWarning(
@@ -179,7 +178,6 @@ func (r *TextChannelResource) Read(ctx context.Context, req resource.ReadRequest
 
 	ch, err := r.client.Session.Channel(state.ID.ValueString())
 	if err != nil {
-		// If channel not found, remove from state.
 		if isNotFound(err) {
 			resp.State.RemoveResource(ctx)
 			return
@@ -243,7 +241,6 @@ func (r *TextChannelResource) Update(ctx context.Context, req resource.UpdateReq
 
 	plan.Position = types.Int64Value(int64(ch.Position))
 
-	// Sync permissions with category if requested.
 	if plan.SyncPermsWithCategory.ValueBool() && !plan.Category.IsNull() {
 		if err := syncChannelPermissions(r.client.Session, ch.ID, plan.Category.ValueString()); err != nil {
 			resp.Diagnostics.AddWarning(
