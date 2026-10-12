@@ -2,6 +2,17 @@
 
 All notable changes to this provider are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.4.0] - 2026-10-12
+
+### Added
+
+- `discord_guild_emoji`: manage static and animated guild emojis with a base64 image data URI, editable names and optional role restrictions. Changing the image or server replaces the emoji; import uses `server_id:emoji_id`. Includes configuration validation and mocked HTTP lifecycle tests covering role clearing, null-versus-empty state, drift, import and API failures.
+- `discordgox.GuildEmojiEdit`: explicitly sends empty role lists so existing restrictions can be cleared, unlike discordgo v0.29.0's edit payload.
+
+### Fixed
+
+- Guild resource 404 handling now checks typed HTTP responses, including wrapped errors, rather than matching `404` anywhere in an error message. Other API errors no longer risk removing resources from state because their message happens to contain those digits.
+
 ## [3.3.2] - 2026-09-07
 
 ### Fixed
@@ -48,6 +59,7 @@ All notable changes to this provider are documented here. The format is based on
 
 - Complete rewrite onto the Terraform Plugin Framework, replacing the legacy SDKv2 implementation. See the README migration notes for moving from the upstream `Lucky3028/discord` provider.
 
+[3.4.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.4.0
 [3.3.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.3.0
 [3.2.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.2.0
 [3.1.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.1.0

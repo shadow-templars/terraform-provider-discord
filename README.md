@@ -37,6 +37,16 @@ The full reference for every resource and data source is generated from the sche
 
 The same pages live in [`docs/`](docs/) in this repository, generated with `tfplugindocs` (see [CONTRIBUTING.md](CONTRIBUTING.md)). This README covers what the generated reference does not: setup, architecture, and the conceptual notes below.
 
+## Emojis
+
+`discord_guild_emoji` manages static and animated custom emojis. Feed `image` from `discord_local_image.data_uri` so changing the file contents is detected, even when the path stays the same. Names and `role_ids` update in place; omit roles or use an empty set to allow everyone.
+
+Discord cannot update an emoji's image. Changing `image` or `server_id` replaces the emoji and changes its ID; existing reactions still refer to the old ID. The default destroy-before-create replacement avoids requiring a spare emoji slot.
+
+Import uses `server_id:emoji_id`. Discord does not return the original image data, so the imported `image` remains null. Configure `image` and use `lifecycle { ignore_changes = [image] }` to adopt the existing emoji without replacing it; remove that lifecycle rule when ready to manage a new image. Match any imported role restrictions in `role_ids` to retain them.
+
+See the [generated emoji reference](docs/resources/guild_emoji.md) for the schema and upload example. The bot needs `CREATE_GUILD_EXPRESSIONS`; editing or deleting emojis created by others needs `MANAGE_GUILD_EXPRESSIONS`.
+
 ## Community
 
 `discord_community` is the one resource whose behaviour needs more than a field reference, so its concepts are documented here; see the [generated docs](https://registry.terraform.io/providers/shadow-templars/discord/latest/docs/resources/community) for the field-by-field reference.

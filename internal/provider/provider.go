@@ -104,6 +104,7 @@ func (p *DiscordProvider) Resources(_ context.Context) []func() resource.Resourc
 		role.NewRoleEveryoneResource,
 		role.NewMemberRolesResource,
 		guild.NewGuildStickerResource,
+		guild.NewGuildEmojiResource,
 		guild.NewManagedServerResource,
 		guild.NewCommunityResource,
 		guild.NewSystemChannelResource,

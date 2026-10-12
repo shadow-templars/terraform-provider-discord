@@ -1,0 +1,1 @@
+terraform import discord_guild_emoji.example 123456789012345678:234567890123456789
