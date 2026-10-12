@@ -1,3 +1,8 @@
+data "discord_local_image" "emoji" {
+  for_each = toset(["barbarian", "wizard", "salute"])
+  file     = "${path.module}/emojis/${each.key}.png"
+}
+
 resource "discord_emoji_collection" "star" {
   server_id         = var.server_id
   rebuild_on_change = true
@@ -6,19 +11,19 @@ resource "discord_emoji_collection" "star" {
   emoji {
     key   = "barbarian"
     name  = "star_barbarian"
-    image = "data:image/png;base64,${filebase64("${path.module}/emojis/barbarian.png")}"
+    image = data.discord_local_image.emoji["barbarian"].data_uri
   }
 
   emoji {
     key   = "wizard"
     name  = "star_wizard"
-    image = "data:image/png;base64,${filebase64("${path.module}/emojis/wizard.png")}"
+    image = data.discord_local_image.emoji["wizard"].data_uri
   }
 
   emoji {
     key      = "templar_salute"
     name     = "star_templar_salute"
-    image    = "data:image/png;base64,${filebase64("${path.module}/emojis/salute.png")}"
+    image    = data.discord_local_image.emoji["salute"].data_uri
     role_ids = [discord_role.templar.id]
   }
 }

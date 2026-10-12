@@ -82,7 +82,7 @@ func (r *ExpressionCollectionResource) Schema(_ context.Context, _ resource.Sche
 	if r.kind == "emoji" {
 		attributes["image"] = schema.StringAttribute{
 			Required:    true,
-			Description: "Base64 image data URI, up to 256 KiB decoded. Image changes rebuild the collection.",
+			Description: "Base64 image data URI, for example discord_local_image.data_uri, up to 256 KiB decoded. Image changes rebuild the collection.",
 		}
 		attributes["role_ids"] = schema.SetAttribute{
 			Optional:    true,

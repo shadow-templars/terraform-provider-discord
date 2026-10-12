@@ -19,7 +19,7 @@ terraform {
   required_providers {
     discord = {
       source  = "shadow-templars/discord"
-      version = "~> 3.5"
+      version = "~> 3.5.1"
     }
   }
 }
@@ -48,6 +48,8 @@ Import uses `server_id:emoji_id`. Discord does not return the original image dat
 See the [generated emoji reference](docs/resources/guild_emoji.md) for the schema and upload example. The bot needs `CREATE_GUILD_EXPRESSIONS`; editing or deleting emojis created by others needs `MANAGE_GUILD_EXPRESSIONS`.
 
 ## Ordered emoji and sticker collections
+
+Use `discord_local_image.data_uri` for each emoji's `image`. Discord accepts emoji artwork as a base64 data URI, while stickers require a multipart file upload. Set each sticker's `file` to its local path; the collection fingerprints the file contents to detect artwork changes at the same path. The image data source reads and encodes files; collection resources own rebuild decisions.
 
 Use `discord_emoji_collection` or `discord_sticker_collection` when upload order matters. Nested `emoji` / `sticker` blocks form an ordered list: the provider uploads one entry, verifies its returned ID and metadata, then proceeds to the next. Keep all guild emojis in one collection if they must share a single sequence. Separate collections and individual resources can still execute concurrently; use an explicit `depends_on` if sticker and emoji collections should also wait for one another.
 

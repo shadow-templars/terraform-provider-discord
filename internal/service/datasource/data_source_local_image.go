@@ -32,7 +32,7 @@ func (d *LocalImageDataSource) Metadata(_ context.Context, req datasource.Metada
 
 func (d *LocalImageDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Reads a local image file and encodes it as a data URI for use with Discord's API.",
+		Description: "Reads a local image file and encodes it as a data URI for Discord image attributes, including guild emojis and emoji collection entries. File-content changes update the data URI even when the path stays the same. Sticker resources require a file path instead.",
 		Attributes: map[string]schema.Attribute{
 			"file": schema.StringAttribute{
 				Required:    true,

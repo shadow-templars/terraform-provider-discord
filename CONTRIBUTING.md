@@ -13,7 +13,7 @@ go test ./...
 go generate ./...
 ```
 
-Documentation under `docs/` is generated from the schema with `tfplugindocs`; edit schema descriptions and example files rather than the generated Markdown, then run `go generate ./...`.
+Documentation under `docs/` is generated from the schema with `tfplugindocs`; edit schema descriptions, example files, and templates under `templates/` rather than the generated Markdown, then run `go generate ./...`. The shared resource and data source templates assign registry subcategories; registry navigation controls sorting within those groups.
 
 ### Git hooks
 

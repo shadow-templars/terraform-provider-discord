@@ -2,6 +2,14 @@
 
 All notable changes to this provider are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.5.1] - 2026-10-12
+
+### Changed
+
+- Group generated resource and data source documentation by Channels, Server Settings, Roles and Permissions, Emojis and Stickers, and Utilities using reusable generation templates.
+- Use the existing `discord_local_image` data source in ordered emoji examples; sticker collections continue to accept file paths and detect artwork changes through file-content fingerprints.
+- Update provider usage examples to require the 3.5.1 patch series.
+
 ## [3.5.0] - 2026-10-12
 
 ### Added
