@@ -13,7 +13,9 @@ go test ./...
 go generate ./...
 ```
 
-Documentation under `docs/` is generated from the schema with `tfplugindocs`; edit schema descriptions, example files, and templates under `templates/` rather than the generated Markdown, then run `go generate ./...`. The shared resource and data source templates assign registry subcategories; registry navigation controls sorting within those groups.
+Documentation under `docs/` is generated from the schema with `tfplugindocs`; edit schema descriptions, example files, and templates under `templates/` rather than the generated Markdown, then run `go generate ./...`. Shared templates control grouping; registry navigation controls sorting.
+
+Include a concise usage example under `examples/` when adding or changing a resource or data source. Add variants only when they demonstrate different behavior. Keep data sources in the top-level Data Sources section; use subcategories for resources.
 
 ### Git hooks
 
