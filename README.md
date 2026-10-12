@@ -1,18 +1,16 @@
-# Terraform Provider: Discord
+# Discord Provider for Terraform and OpenTofu
 
 [![Release](https://img.shields.io/github/v/release/shadow-templars/terraform-provider-discord)](https://github.com/shadow-templars/terraform-provider-discord/releases)
-[![Build](https://img.shields.io/github/actions/workflow/status/shadow-templars/terraform-provider-discord/release.yml)](https://github.com/shadow-templars/terraform-provider-discord/actions/workflows/release.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/shadow-templars/terraform-provider-discord/ci.yml?branch=main)](https://github.com/shadow-templars/terraform-provider-discord/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/shadow-templars/terraform-provider-discord)](LICENSE)
 
-A Terraform/OpenTofu provider for managing Discord servers declaratively, built on the [Terraform Plugin Framework](https://developer.hashicorp.com/terraform/plugin/framework).
+Manage Discord servers, channels, roles, permissions, moderation, emojis, and stickers as code.
 
-## Requirements
+A maintained successor to [Lucky3028/terraform-provider-discord](https://github.com/Lucky3028/terraform-provider-discord), whose repository is archived and marked discontinued. Built on the Terraform Plugin Framework, with signed releases for Linux, macOS, and Windows.
 
-- [OpenTofu](https://opentofu.org/) >= 1.6 or [Terraform](https://www.terraform.io/) >= 1.0
-- [Go](https://go.dev/) >= 1.25 (for building from source)
-- A Discord bot token with appropriate permissions
+## Get started
 
-## Usage
+Requires OpenTofu >= 1.6 or Terraform >= 1.0, and a Discord bot token with permissions for the resources you manage.
 
 ```hcl
 terraform {
@@ -24,80 +22,27 @@ terraform {
   }
 }
 
-provider "discord" {
-  token = var.discord_bot_token # or set DISCORD_TOKEN
-}
+provider "discord" {}
 ```
+
+Set `DISCORD_TOKEN` to your bot token, then run `tofu init` and `tofu plan` (or the equivalent Terraform commands).
+
+## What you can manage
+
+| Area | Resources |
+| --- | --- |
+| Servers | Server settings, Community, onboarding, and widgets |
+| Channels | Categories, text, voice, forums, messages, invites, and webhooks |
+| Access | Roles, member roles, and channel permissions |
+| Moderation | Auto Moderation rules |
+| Expressions | Individual emojis and stickers, or ordered collections with sequential uploads |
 
 ## Documentation
 
-The full reference for every resource and data source is generated from the schema and published on the Terraform Registry:
+- [Terraform Registry reference](https://registry.terraform.io/providers/shadow-templars/discord/latest/docs) · [OpenTofu Registry](https://search.opentofu.org/provider/shadow-templars/discord/latest)
+- [Emojis and stickers](docs/guides/emojis-and-stickers.md) — artwork, access restrictions, ordered rebuilds, and imports
+- [Community servers](docs/guides/community.md) — prerequisites, lifecycle, and ownership
+- [Migrating from Lucky3028](docs/guides/migration.md) — compatibility checks and provider state addresses
+- [Examples](examples/) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
-**<https://registry.terraform.io/providers/shadow-templars/discord/latest/docs>**
-
-The same pages live in [`docs/`](docs/) in this repository, generated with `tfplugindocs` (see [CONTRIBUTING.md](CONTRIBUTING.md)). This README covers what the generated reference does not: setup, architecture, and the conceptual notes below.
-
-## Emojis
-
-`discord_guild_emoji` manages static and animated custom emojis. Feed `image` from `discord_local_image.data_uri` so changing the file contents is detected, even when the path stays the same. Names and `role_ids` update in place; omit roles or use an empty set to allow everyone.
-
-Discord cannot update an emoji's image. Changing `image` or `server_id` replaces the emoji and changes its ID; existing reactions still refer to the old ID. The default destroy-before-create replacement avoids requiring a spare emoji slot.
-
-Import uses `server_id:emoji_id`. Discord does not return the original image data, so the imported `image` remains null. Configure `image` and use `lifecycle { ignore_changes = [image] }` to adopt the existing emoji without replacing it; remove that lifecycle rule when ready to manage a new image. Match any imported role restrictions in `role_ids` to retain them.
-
-See the [generated emoji reference](docs/resources/guild_emoji.md) for the schema and upload example. The bot needs `CREATE_GUILD_EXPRESSIONS`; editing or deleting emojis created by others needs `MANAGE_GUILD_EXPRESSIONS`.
-
-## Ordered emoji and sticker collections
-
-Use `discord_local_image.data_uri` for each emoji's `image`. Discord accepts emoji artwork as a base64 data URI, while stickers require a multipart file upload. Set each sticker's `file` to its local path; the collection fingerprints the file contents to detect artwork changes at the same path. The image data source reads and encodes files; collection resources own rebuild decisions.
-
-Use `discord_emoji_collection` or `discord_sticker_collection` when upload order matters. Nested `emoji` / `sticker` blocks form an ordered list: the provider uploads one entry, verifies its returned ID and metadata, then proceeds to the next. Keep all guild emojis in one collection if they must share a single sequence. Separate collections and individual resources can still execute concurrently; use an explicit `depends_on` if sticker and emoji collections should also wait for one another.
-
-New collections upload without deleting existing, unowned expressions. Subsequent entry additions, removals, reorders, metadata changes, local artwork changes, or observed drift require `rebuild_on_change = true`. The default is false and refuses such updates. Enabling this flag alone does not rebuild an unchanged collection.
-
-**A rebuild deletes every ID owned by that collection before uploading replacements. All managed IDs change, existing emoji/sticker references may become invalid, and the collection may be unavailable for an extended period while Discord enforces rate limits.** The provider emits a warning during planning. Unmanaged expressions are never deleted. Do not use `create_before_destroy`; for guild changes it can interleave uploads and exceed capacity. This is an in-place rebuild, so `prevent_destroy` alone does not guard it; leave `rebuild_on_change` false to refuse rebuilding.
-
-Keys identify entries in the computed `ids` map; block order controls upload order. Emoji role restrictions are preserved during recreation. Sticker files are hashed by content, so replacing bytes at the same path produces a change. Files must be available when planning and applying; changes between those stages are rejected before deletion.
-
-Refresh detects missing managed IDs and changed names, roles, descriptions or tags. It does not adopt a replacement with the same name: replacement IDs are unowned and must be explicitly imported if desired. Discord does not expose picker positions or original image hashes, so remote artwork and client display-order drift cannot be detected. The provider enforces creation sequence within the collection, not an undocumented client sorting contract.
-
-When an API request or verification fails, uploads stop. IDs successfully returned before the failure remain in the error response state. On the next apply a rebuild cleans up that partial collection before starting again; a failed initial creation may be tainted and replaced by Terraform. Partial deletion retains only the remaining IDs. This is not transactional: abrupt process termination or a response lost after Discord accepted a POST can prevent Terraform from saving an ID. Inspect and reconcile the guild after such a failure rather than assuming rollback.
-
-### Migrating individual resources
-
-A collection cannot share ownership with individual expression resources. Capture their current Discord IDs, remove the individual resource configuration, and relinquish its state without deleting the remote objects (for example with `removed` blocks using `lifecycle { destroy = false }`, where supported). Then import only those IDs into the matching collection using stable keys:
-
-```hcl
-import {
-  to = discord_emoji_collection.star
-  id = "GUILD_ID:barbarian=EMOJI_ID,wizard=OTHER_EMOJI_ID"
-}
-```
-
-Match the keys to the configured nested blocks. Import cannot recover artwork or the configured upload sequence: the first configured plan explicitly rebuilds the adopted IDs and requires `rebuild_on_change = true`. Never leave an individual resource managing an imported ID.
-
-See the generated [emoji collection reference](docs/resources/emoji_collection.md) and [sticker collection reference](docs/resources/sticker_collection.md) for ordered examples and schema details.
-
-## Community
-
-`discord_community` is the one resource whose behaviour needs more than a field reference, so its concepts are documented here; see the [generated docs](https://registry.terraform.io/providers/shadow-templars/discord/latest/docs/resources/community) for the field-by-field reference.
-
-- **Existence is the enablement signal.** Creating the resource turns a regular server into a Community server; destroying it turns Community off.
-- **Preconditions.** Discord requires `verification_level >= 1` and `explicit_content_filter = 2` (set via `discord_managed_server`) before Community can be enabled. If unmet, the apply fails.
-- **Announcement-channel dependency.** Announcement channels (`discord_news_channel`, type 5) need the `NEWS` feature, granted only once `COMMUNITY` is enabled, so they must `depends_on` this resource.
-- **Destroying is consequential.** It strips the `COMMUNITY` feature, which also tears down the welcome screen and onboarding prompts and breaks announcement channels. Guard it with `lifecycle { prevent_destroy = true }` in production.
-
-### Not managed
-
-- **Server Description**: owned by `discord_managed_server`; managing it in two resources would make them fight on every plan.
-- **Membership Screening** (the rules-acceptance gate): Discord has withdrawn the get/edit API docs while the object is being reworked, so it cannot be managed responsibly yet.
-- **Age-Restriction** (`nsfw_level`): readable but absent from Discord's Modify Guild parameters, so it cannot be written via the API.
-
-## Migration from the upstream provider
-
-This provider began as a fork of [Lucky3028/terraform-provider-discord](https://github.com/Lucky3028/terraform-provider-discord) and was rewritten onto the Plugin Framework. To migrate:
-
-1. Point `required_providers` at `shadow-templars/discord`.
-2. Run `tofu state replace-provider Lucky3028/discord shadow-templars/discord`.
-3. Run `tofu init -upgrade`.
-4. Run `tofu plan` and confirm no unexpected changes.
+Ordered collection rebuilds delete and recreate every managed entry, changing its Discord ID. Read the [expression guide](docs/guides/emojis-and-stickers.md) before enabling `rebuild_on_change`.
