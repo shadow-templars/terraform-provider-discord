@@ -19,7 +19,9 @@ func TestGuildEmojiSchemaRegistration(t *testing.T) {
 			t.Fatalf("invalid provider schema: %s: %s", diagnostic.Summary, diagnostic.Detail)
 		}
 	}
-	if resp.ResourceSchemas["discord_guild_emoji"] == nil {
-		t.Fatal("discord_guild_emoji is not registered in the provider schema")
+	for _, name := range []string{"discord_guild_emoji", "discord_emoji_collection", "discord_sticker_collection"} {
+		if resp.ResourceSchemas[name] == nil {
+			t.Fatalf("%s is not registered in the provider schema", name)
+		}
 	}
 }

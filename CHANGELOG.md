@@ -2,6 +2,17 @@
 
 All notable changes to this provider are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.5.0] - 2026-10-12
+
+### Added
+
+- Ordered `discord_emoji_collection` and `discord_sticker_collection` resources with list-ordered nested entries, sequential upload and verification, stable-key ID outputs, explicit opt-in rebuilds and destructive-change plan warnings. Rebuilds delete only collection-owned IDs before uploading any replacements.
+- Collection drift checks for missing IDs and observable metadata, file-content fingerprinting for sticker artwork, partial-failure ownership tracking, and explicit-ID import for migrating individual resources. Remote image and picker-position drift are not exposed by Discord.
+
+### Changed
+
+- Guild sticker create, read and delete extension methods accept Discord request options, allowing collection requests to carry Terraform cancellation contexts. Existing callers remain compatible.
+
 ## [3.4.0] - 2026-10-12
 
 ### Added
@@ -59,6 +70,7 @@ All notable changes to this provider are documented here. The format is based on
 
 - Complete rewrite onto the Terraform Plugin Framework, replacing the legacy SDKv2 implementation. See the README migration notes for moving from the upstream `Lucky3028/discord` provider.
 
+[3.5.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.5.0
 [3.4.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.4.0
 [3.3.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.3.0
 [3.2.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.2.0

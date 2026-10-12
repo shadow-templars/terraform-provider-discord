@@ -15,7 +15,7 @@ import (
 
 // GuildStickerCreate uploads a new sticker via multipart form. discordgo has no
 // typed helper for guild sticker creation.
-func (c *Client) GuildStickerCreate(guildID, name, description, tags, filename string, fileData []byte) (*discordgo.Sticker, error) {
+func (c *Client) GuildStickerCreate(guildID, name, description, tags, filename string, fileData []byte, options ...discordgo.RequestOption) (*discordgo.Sticker, error) {
 	var body bytes.Buffer
 	writer := multipart.NewWriter(&body)
 	writer.WriteField("name", name)
@@ -30,7 +30,7 @@ func (c *Client) GuildStickerCreate(guildID, name, description, tags, filename s
 	writer.Close()
 
 	endpoint := discordgo.EndpointGuildStickers(guildID)
-	resp, err := c.RequestRaw("POST", endpoint, writer.FormDataContentType(), body.Bytes(), endpoint, 0)
+	resp, err := c.RequestRaw("POST", endpoint, writer.FormDataContentType(), body.Bytes(), endpoint, 0, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,9 +43,9 @@ func (c *Client) GuildStickerCreate(guildID, name, description, tags, filename s
 }
 
 // GuildSticker fetches a single guild sticker.
-func (c *Client) GuildSticker(guildID, stickerID string) (*discordgo.Sticker, error) {
+func (c *Client) GuildSticker(guildID, stickerID string, options ...discordgo.RequestOption) (*discordgo.Sticker, error) {
 	endpoint := discordgo.EndpointGuildSticker(guildID, stickerID)
-	resp, err := c.RequestWithBucketID("GET", endpoint, nil, endpoint)
+	resp, err := c.RequestWithBucketID("GET", endpoint, nil, endpoint, options...)
 	if err != nil {
 		return nil, err
 	}
@@ -71,9 +71,9 @@ func (c *Client) GuildStickerEdit(guildID, stickerID, name, description, tags st
 }
 
 // GuildStickerDelete removes a guild sticker.
-func (c *Client) GuildStickerDelete(guildID, stickerID string) error {
+func (c *Client) GuildStickerDelete(guildID, stickerID string, options ...discordgo.RequestOption) error {
 	endpoint := discordgo.EndpointGuildSticker(guildID, stickerID)
-	_, err := c.RequestWithBucketID("DELETE", endpoint, nil, endpoint)
+	_, err := c.RequestWithBucketID("DELETE", endpoint, nil, endpoint, options...)
 	return err
 }
 
