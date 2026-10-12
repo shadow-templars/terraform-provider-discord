@@ -61,7 +61,7 @@ func (r *WebhookResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			},
 			"avatar_data_uri": schema.StringAttribute{
 				Optional:    true,
-				Description: "The avatar data URI for the webhook (data:image/...;base64,...).",
+				Description: "Webhook avatar data URI, for example discord_local_image.data_uri.",
 			},
 			"url": schema.StringAttribute{
 				Computed:    true,

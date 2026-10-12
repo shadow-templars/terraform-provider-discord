@@ -81,11 +81,11 @@ func (r *ManagedServerResource) Schema(_ context.Context, _ resource.SchemaReque
 			},
 			"icon_data_uri": schema.StringAttribute{
 				Optional:    true,
-				Description: "Server icon as a data URI (data:image/...;base64,...).",
+				Description: "Server icon data URI, for example discord_local_image.data_uri.",
 			},
 			"splash_data_uri": schema.StringAttribute{
 				Optional:    true,
-				Description: "Invite splash image as a data URI (requires INVITE_SPLASH feature).",
+				Description: "Invite splash data URI, for example discord_local_image.data_uri. Requires the INVITE_SPLASH feature.",
 			},
 		},
 	}
