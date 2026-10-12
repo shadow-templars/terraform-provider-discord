@@ -62,7 +62,7 @@ func (r *GuildEmojiResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
-				Description: "The emoji name: 2-32 ASCII letters, digits, or underscores.",
+				Description: "The emoji name: 2-32 ASCII letters, digits, or underscores. Use shared prefixes such as class_monk and class_wizard to group emojis alphabetically in the picker; upload order does not control grouping.",
 			},
 			"image": schema.StringAttribute{
 				Required:      true,

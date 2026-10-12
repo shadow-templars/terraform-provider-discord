@@ -14,7 +14,7 @@ Manage Discord configuration as code: version server settings, review planned ch
 | Channels | Categories, text, voice, forums, messages, invites, webhooks |
 | Access | Roles, member roles, channel permissions |
 | Moderation | Auto Moderation rules |
-| Expressions | Emojis, stickers, ordered collections with sequential uploads |
+| Expressions | Emojis with name-based grouping; stickers with optional sequential collections |
 
 ## Example
 
@@ -23,7 +23,7 @@ terraform {
   required_providers {
     discord = {
       source  = "shadow-templars/discord"
-      version = "~> 3.5.1"
+      version = "~> 3.5.2"
     }
   }
 }

@@ -406,6 +406,11 @@ func TestCollectionCancellationStopsUploads(t *testing.T) {
 func TestCollectionConfigureAndMetadata(t *testing.T) {
 	for _, constructor := range []func() resource.Resource{NewEmojiCollectionResource, NewStickerCollectionResource} {
 		r := constructor().(*ExpressionCollectionResource)
+		var schemaResponse resource.SchemaResponse
+		r.Schema(context.Background(), resource.SchemaRequest{}, &schemaResponse)
+		if (schemaResponse.Schema.DeprecationMessage != "") != (r.kind == "emoji") {
+			t.Fatal("only emoji collections must be deprecated")
+		}
 		var metadata resource.MetadataResponse
 		r.Metadata(context.Background(), resource.MetadataRequest{ProviderTypeName: "discord"}, &metadata)
 		if metadata.TypeName != "discord_"+r.kind+"_collection" {

@@ -141,6 +141,10 @@ func (r *ExpressionCollectionResource) Schema(_ context.Context, _ resource.Sche
 			},
 		},
 	}
+	if r.kind == "emoji" {
+		resp.Schema.DeprecationMessage = "Use discord_guild_emoji with shared name prefixes. Emoji picker grouping follows names, not upload order. Migrate existing collection IDs before removing the collection."
+		resp.Schema.Description = "Deprecated: use discord_guild_emoji with name prefixes such as class_monk. Retained for existing collection state and migrations; sequential uploads do not control emoji picker order. Import format: server_id:key=id,key=id."
+	}
 }
 
 func (r *ExpressionCollectionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

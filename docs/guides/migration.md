@@ -22,4 +22,4 @@ Check your configuration against the [resource reference](https://registry.terra
 
 Use equivalent `terraform` commands if applicable. Replacing a provider address does not convert incompatible resource schemas.
 
-Moving individual expressions into collections is a separate [migration](emojis-and-stickers.md#migrating-individual-resources) that recreates their Discord IDs.
+Moving individual stickers into a collection is a separate [migration](emojis-and-stickers.md#migrating-individual-stickers) that recreates their Discord IDs.

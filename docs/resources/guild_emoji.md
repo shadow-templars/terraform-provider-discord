@@ -14,12 +14,12 @@ Manages a Discord guild custom emoji. Supports static and animated images, role 
 
 ```terraform
 data "discord_local_image" "emoji" {
-  file = "${path.module}/assets/star-yes.png"
+  file = "${path.module}/assets/monk.png"
 }
 
 resource "discord_guild_emoji" "example" {
   server_id = var.server_id
-  name      = "star_yes"
+  name      = "class_monk"
   image     = data.discord_local_image.emoji.data_uri
 
   # Omit role_ids to allow everyone. An empty set clears existing restrictions.
@@ -33,7 +33,7 @@ resource "discord_guild_emoji" "example" {
 ### Required
 
 - `image` (String) Base64 image data URI, for example discord_local_image.data_uri. Supports PNG, JPEG, GIF, WebP, and AVIF, up to 256 KiB decoded. Use 128x128 images. Changing the image replaces the emoji and changes its ID; image data cannot be read back from Discord after import.
-- `name` (String) The emoji name: 2-32 ASCII letters, digits, or underscores.
+- `name` (String) The emoji name: 2-32 ASCII letters, digits, or underscores. Use shared prefixes such as class_monk and class_wizard to group emojis alphabetically in the picker; upload order does not control grouping.
 - `server_id` (String) The server (guild) ID. Changing it replaces the emoji.
 
 ### Optional

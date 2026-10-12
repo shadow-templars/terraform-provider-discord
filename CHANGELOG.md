@@ -2,6 +2,14 @@
 
 All notable changes to this provider are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.5.2] - 2026-10-12
+
+### Changed
+
+- Deprecate emoji collections in favor of individual emojis with shared name prefixes; sequential uploads do not control picker grouping. Existing collection state remains supported for migration. Sticker collections are unchanged.
+- Document naming guidance on the regular emoji resource and update examples to use class prefixes.
+- Include the streamlined adoption guides, top-level data source grouping, and server, webhook, sticker, and data source examples added since 3.5.1.
+
 ## [3.5.1] - 2026-10-12
 
 ### Changed
