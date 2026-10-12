@@ -40,9 +40,8 @@ Set `DISCORD_TOKEN` to your bot token, then run `tofu init` and `tofu plan` (or 
 ## Documentation
 
 - [Terraform Registry reference](https://registry.terraform.io/providers/shadow-templars/discord/latest/docs) · [OpenTofu Registry](https://search.opentofu.org/provider/shadow-templars/discord/latest)
-- [Emojis and stickers](docs/guides/emojis-and-stickers.md) — artwork, access restrictions, ordered rebuilds, and imports
-- [Community servers](docs/guides/community.md) — prerequisites, lifecycle, and ownership
-- [Migrating from Lucky3028](docs/guides/migration.md) — compatibility checks and provider state addresses
+- [Emojis and stickers](docs/guides/emojis-and-stickers.md) — ownership, rebuild caveats, and adoption
+- [Migrating from Lucky3028](docs/guides/migration.md) — compatibility and state transfer
 - [Examples](examples/) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 Ordered collection rebuilds delete and recreate every managed entry, changing its Discord ID. Read the [expression guide](docs/guides/emojis-and-stickers.md) before enabling `rebuild_on_change`.
