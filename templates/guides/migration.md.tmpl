@@ -16,7 +16,7 @@ Check your configuration against the [resource reference](https://registry.terra
 ## Migration
 
 1. Back up state. Run `tofu providers` to identify its current provider address.
-2. Update `required_providers` using the [installation example](https://github.com/shadow-templars/terraform-provider-discord/blob/main/README.md#get-started).
+2. Update `required_providers` using the [installation example](https://github.com/shadow-templars/terraform-provider-discord/blob/main/README.md#example).
 3. Run `tofu state replace-provider OLD_PROVIDER_ADDRESS NEW_PROVIDER_ADDRESS` with complete addresses. Use the registry hostname matching your configuration.
 4. Run `tofu init -upgrade` and `tofu plan`. Resolve unexpected replacements or deletions before applying.
 

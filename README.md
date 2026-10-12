@@ -4,13 +4,19 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/shadow-templars/terraform-provider-discord/ci.yml?branch=main)](https://github.com/shadow-templars/terraform-provider-discord/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/shadow-templars/terraform-provider-discord)](LICENSE)
 
-Manage Discord servers, channels, roles, permissions, moderation, emojis, and stickers as code.
+Manage Discord configuration as code: version server settings, review planned changes, and reproduce your setup. A maintained successor to the discontinued [Lucky3028 provider](https://github.com/Lucky3028/terraform-provider-discord).
 
-A maintained successor to [Lucky3028/terraform-provider-discord](https://github.com/Lucky3028/terraform-provider-discord), whose repository is archived and marked discontinued. Built on the Terraform Plugin Framework, with signed releases for Linux, macOS, and Windows.
+## Capabilities
 
-## Get started
+| Area | Supported |
+| --- | --- |
+| Servers | Settings, Community, onboarding, widgets |
+| Channels | Categories, text, voice, forums, messages, invites, webhooks |
+| Access | Roles, member roles, channel permissions |
+| Moderation | Auto Moderation rules |
+| Expressions | Emojis, stickers, ordered collections with sequential uploads |
 
-Requires OpenTofu >= 1.6 or Terraform >= 1.0, and a Discord bot token with permissions for the resources you manage.
+## Example
 
 ```hcl
 terraform {
@@ -23,25 +29,23 @@ terraform {
 }
 
 provider "discord" {}
+
+resource "discord_text_channel" "general" {
+  server_id = "123456789012345678"
+  name      = "general"
+}
 ```
 
-Set `DISCORD_TOKEN` to your bot token, then run `tofu init` and `tofu plan` (or the equivalent Terraform commands).
+Replace `server_id` with your guild ID. Set `DISCORD_TOKEN` to your bot token.
 
-## What you can manage
+## Requirements
 
-| Area | Resources |
-| --- | --- |
-| Servers | Server settings, Community, onboarding, and widgets |
-| Channels | Categories, text, voice, forums, messages, invites, and webhooks |
-| Access | Roles, member roles, and channel permissions |
-| Moderation | Auto Moderation rules |
-| Expressions | Individual emojis and stickers, or ordered collections with sequential uploads |
+- OpenTofu >= 1.6 or Terraform >= 1.0
+- Discord bot permissions for the resources you manage
 
 ## Documentation
 
-- [Terraform Registry reference](https://registry.terraform.io/providers/shadow-templars/discord/latest/docs) · [OpenTofu Registry](https://search.opentofu.org/provider/shadow-templars/discord/latest)
-- [Emojis and stickers](docs/guides/emojis-and-stickers.md) — ownership, rebuild caveats, and adoption
-- [Migrating from Lucky3028](docs/guides/migration.md) — compatibility and state transfer
+- [Terraform reference](https://registry.terraform.io/providers/shadow-templars/discord/latest/docs) · [OpenTofu Registry](https://search.opentofu.org/provider/shadow-templars/discord/latest)
+- [Expression adoption and rebuilds](docs/guides/emojis-and-stickers.md)
+- [Migrating from Lucky3028](docs/guides/migration.md)
 - [Examples](examples/) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
-
-Ordered collection rebuilds delete and recreate every managed entry, changing its Discord ID. Read the [expression guide](docs/guides/emojis-and-stickers.md) before enabling `rebuild_on_change`.
