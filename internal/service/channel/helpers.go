@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/shadow-templars/terraform-provider-discord/internal/discordgox"
 )
@@ -42,6 +43,15 @@ func isNotFound(err error) bool {
 		return true
 	}
 	return strings.Contains(err.Error(), "404")
+}
+
+// optionalString returns null for an empty string. Discord sends "" for fields
+// that were never set, and keeping "" in state would plan an update on every run.
+func optionalString(v string) types.String {
+	if v == "" {
+		return types.StringNull()
+	}
+	return types.StringValue(v)
 }
 
 // boolPtr returns a pointer to a bool value.

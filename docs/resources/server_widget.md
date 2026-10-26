@@ -22,7 +22,7 @@ Manages the widget settings for a Discord server.
 
 ### Optional
 
-- `channel_id` (String) The channel ID for the widget invite.
+- `channel_id` (String) The channel ID for the widget invite. When unset, the channel configured in Discord is left unchanged.
 
 ### Read-Only
 

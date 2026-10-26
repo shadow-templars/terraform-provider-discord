@@ -171,7 +171,7 @@ func (r *ForumChannelResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	state.Name = types.StringValue(ch.Name)
-	state.Topic = types.StringValue(ch.Topic)
+	state.Topic = optionalString(ch.Topic)
 	state.Position = types.Int64Value(int64(ch.Position))
 	state.ServerID = types.StringValue(ch.GuildID)
 
@@ -253,7 +253,7 @@ func (r *ForumChannelResource) ImportState(ctx context.Context, req resource.Imp
 		ID:                    types.StringValue(ch.ID),
 		ServerID:              types.StringValue(ch.GuildID),
 		Name:                  types.StringValue(ch.Name),
-		Topic:                 types.StringValue(ch.Topic),
+		Topic:                 optionalString(ch.Topic),
 		Position:              types.Int64Value(int64(ch.Position)),
 		SyncPermsWithCategory: types.BoolValue(false),
 	}

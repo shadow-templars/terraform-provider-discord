@@ -59,7 +59,11 @@ func (r *ServerWidgetResource) Schema(_ context.Context, _ resource.SchemaReques
 			},
 			"channel_id": schema.StringAttribute{
 				Optional:    true,
-				Description: "The channel ID for the widget invite.",
+				Computed:    true,
+				Description: "The channel ID for the widget invite. When unset, the channel configured in Discord is left unchanged.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -92,6 +96,10 @@ func (r *ServerWidgetResource) Create(ctx context.Context, req resource.CreateRe
 		resp.Diagnostics.AddError("Error Updating Server Widget", err.Error())
 		return
 	}
+	if err := r.refresh(&plan); err != nil {
+		resp.Diagnostics.AddError("Error Reading Server Widget", err.Error())
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -103,17 +111,9 @@ func (r *ServerWidgetResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	widget, err := r.client.Session.GuildWidget(state.ServerID.ValueString())
-	if err != nil {
+	if err := r.refresh(&state); err != nil {
 		resp.Diagnostics.AddError("Error Reading Server Widget", err.Error())
 		return
-	}
-
-	state.Enabled = types.BoolValue(widget.Enabled)
-	if widget.ChannelID != "" {
-		state.ChannelID = types.StringValue(widget.ChannelID)
-	} else {
-		state.ChannelID = types.StringNull()
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -128,6 +128,10 @@ func (r *ServerWidgetResource) Update(ctx context.Context, req resource.UpdateRe
 
 	if err := r.apply(&plan); err != nil {
 		resp.Diagnostics.AddError("Error Updating Server Widget", err.Error())
+		return
+	}
+	if err := r.refresh(&plan); err != nil {
+		resp.Diagnostics.AddError("Error Reading Server Widget", err.Error())
 		return
 	}
 
@@ -147,4 +151,19 @@ func (r *ServerWidgetResource) apply(plan *ServerWidgetResourceModel) error {
 	}
 
 	return r.client.Session.GuildWidgetEdit(plan.ServerID.ValueString(), settings)
+}
+
+func (r *ServerWidgetResource) refresh(model *ServerWidgetResourceModel) error {
+	widget, err := r.client.Session.GuildWidget(model.ServerID.ValueString())
+	if err != nil {
+		return err
+	}
+
+	model.Enabled = types.BoolValue(widget.Enabled)
+	if widget.ChannelID != "" {
+		model.ChannelID = types.StringValue(widget.ChannelID)
+	} else {
+		model.ChannelID = types.StringNull()
+	}
+	return nil
 }

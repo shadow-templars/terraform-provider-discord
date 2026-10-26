@@ -2,6 +2,17 @@
 
 All notable changes to this provider are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.5.3] - 2026-10-26
+
+### Fixed
+
+- Text and forum channels without a `topic` no longer plan a hidden `"" -> null` update on every run; an empty topic from Discord now reads as null.
+- `discord_server_widget` treats an unset `channel_id` as unmanaged instead of planning to clear the channel Discord keeps on every run.
+
+### Changed
+
+- Update provider usage examples to require the 3.5.3 patch series.
+
 ## [3.5.2] - 2026-10-12
 
 ### Changed
@@ -86,6 +97,9 @@ All notable changes to this provider are documented here. The format is based on
 
 - Complete rewrite onto the Terraform Plugin Framework, replacing the legacy SDKv2 implementation. See the README migration notes for moving from the upstream `Lucky3028/discord` provider.
 
+[3.5.3]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.5.3
+[3.5.2]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.5.2
+[3.5.1]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.5.1
 [3.5.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.5.0
 [3.4.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.4.0
 [3.3.0]: https://github.com/shadow-templars/terraform-provider-discord/releases/tag/v3.3.0

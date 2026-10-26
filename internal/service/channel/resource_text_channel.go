@@ -187,7 +187,7 @@ func (r *TextChannelResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	state.Name = types.StringValue(ch.Name)
-	state.Topic = types.StringValue(ch.Topic)
+	state.Topic = optionalString(ch.Topic)
 	state.Position = types.Int64Value(int64(ch.Position))
 	state.NSFW = types.BoolValue(ch.NSFW)
 	state.ServerID = types.StringValue(ch.GuildID)
@@ -282,7 +282,7 @@ func (r *TextChannelResource) ImportState(ctx context.Context, req resource.Impo
 		ID:                    types.StringValue(ch.ID),
 		ServerID:              types.StringValue(ch.GuildID),
 		Name:                  types.StringValue(ch.Name),
-		Topic:                 types.StringValue(ch.Topic),
+		Topic:                 optionalString(ch.Topic),
 		Position:              types.Int64Value(int64(ch.Position)),
 		NSFW:                  types.BoolValue(ch.NSFW),
 		SyncPermsWithCategory: types.BoolValue(false),
