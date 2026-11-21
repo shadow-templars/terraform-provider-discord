@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -20,6 +21,7 @@ import (
 var (
 	_ resource.Resource                = (*TextChannelResource)(nil)
 	_ resource.ResourceWithImportState = (*TextChannelResource)(nil)
+	_ resource.ResourceWithModifyPlan  = (*TextChannelResource)(nil)
 )
 
 type TextChannelResource struct {
@@ -36,6 +38,7 @@ type TextChannelResourceModel struct {
 	NSFW                  types.Bool   `tfsdk:"nsfw"`
 	SyncPermsWithCategory types.Bool   `tfsdk:"sync_perms_with_category"`
 	RateLimitPerUser      types.Int64  `tfsdk:"rate_limit_per_user"`
+	PermissionOverwrites  types.Set    `tfsdk:"permission_overwrites"`
 }
 
 func NewTextChannelResource() resource.Resource {
@@ -100,6 +103,7 @@ func (r *TextChannelResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Optional:    true,
 				Description: "Slowmode rate limit in seconds (0-21600). 0 means disabled.",
 			},
+			"permission_overwrites": textChannelOverwritesSchema(),
 		},
 	}
 }
@@ -119,18 +123,36 @@ func (r *TextChannelResource) Configure(_ context.Context, req resource.Configur
 	r.client = c
 }
 
+func (r *TextChannelResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+	var plan TextChannelResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if !resp.Diagnostics.HasError() {
+		_, diags := plan.channelOverwrites(ctx, true)
+		resp.Diagnostics.Append(diags...)
+	}
+}
+
 func (r *TextChannelResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan TextChannelResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	overwrites, diags := plan.channelOverwrites(ctx, false)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	params := discordgo.GuildChannelCreateData{
-		Name:  plan.Name.ValueString(),
-		Type:  discordgo.ChannelTypeGuildText,
-		Topic: plan.Topic.ValueString(),
-		NSFW:  plan.NSFW.ValueBool(),
+		Name:                 plan.Name.ValueString(),
+		Type:                 discordgo.ChannelTypeGuildText,
+		Topic:                plan.Topic.ValueString(),
+		NSFW:                 plan.NSFW.ValueBool(),
+		PermissionOverwrites: overwrites,
 	}
 
 	if !plan.Category.IsNull() && !plan.Category.IsUnknown() {
@@ -204,6 +226,15 @@ func (r *TextChannelResource) Read(ctx context.Context, req resource.ReadRequest
 		state.RateLimitPerUser = types.Int64Null()
 	}
 
+	if !state.PermissionOverwrites.IsNull() {
+		var diags diag.Diagnostics
+		state.PermissionOverwrites, diags = textChannelOverwriteState(ctx, ch.PermissionOverwrites)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -213,11 +244,17 @@ func (r *TextChannelResource) Update(ctx context.Context, req resource.UpdateReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	overwrites, diags := plan.channelOverwrites(ctx, false)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	edit := &discordgo.ChannelEdit{
-		Name:  plan.Name.ValueString(),
-		Topic: plan.Topic.ValueString(),
-		NSFW:  boolPtr(plan.NSFW.ValueBool()),
+		Name:                 plan.Name.ValueString(),
+		Topic:                plan.Topic.ValueString(),
+		NSFW:                 boolPtr(plan.NSFW.ValueBool()),
+		PermissionOverwrites: overwrites,
 	}
 
 	if !plan.Position.IsNull() && !plan.Position.IsUnknown() {
@@ -286,6 +323,7 @@ func (r *TextChannelResource) ImportState(ctx context.Context, req resource.Impo
 		Position:              types.Int64Value(int64(ch.Position)),
 		NSFW:                  types.BoolValue(ch.NSFW),
 		SyncPermsWithCategory: types.BoolValue(false),
+		PermissionOverwrites:  types.SetNull(textChannelOverwriteType),
 	}
 
 	if ch.ParentID != "" {
