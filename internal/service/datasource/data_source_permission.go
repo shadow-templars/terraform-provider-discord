@@ -60,9 +60,11 @@ const (
 	permCreateEvents            = 1 << 44
 	permUseExternalSounds       = 1 << 45
 	permSendVoiceMessages       = 1 << 46
+	permSetVoiceChannelStatus   = 1 << 48
 	permSendPolls               = 1 << 49
 	permUseExternalApps         = 1 << 50
-	permSetVoiceChannelStatus   = 1 << 48
+	permPinMessages             = 1 << 51
+	permBypassSlowmode          = 1 << 52
 )
 
 type PermissionDataSource struct{}
@@ -109,10 +111,16 @@ type PermissionDataSourceModel struct {
 	SendMessagesInThreads   types.String `tfsdk:"send_messages_in_threads"`
 	UseEmbeddedActivities   types.String `tfsdk:"use_embedded_activities"`
 	ModerateMembers         types.String `tfsdk:"moderate_members"`
+	ViewCreatorMonetization types.String `tfsdk:"view_creator_monetization_analytics"`
 	UseSoundboard           types.String `tfsdk:"use_soundboard"`
+	CreateExpressions       types.String `tfsdk:"create_expressions"`
+	CreateEvents            types.String `tfsdk:"create_events"`
 	UseExternalSounds       types.String `tfsdk:"use_external_sounds"`
 	SendVoiceMessages       types.String `tfsdk:"send_voice_messages"`
 	SendPolls               types.String `tfsdk:"send_polls"`
+	UseExternalApps         types.String `tfsdk:"use_external_apps"`
+	PinMessages             types.String `tfsdk:"pin_messages"`
+	BypassSlowmode          types.String `tfsdk:"bypass_slowmode"`
 	UseApplicationCommands  types.String `tfsdk:"use_application_commands"`
 	SendThreadMessages      types.String `tfsdk:"send_thread_messages"`
 	StartEmbeddedActivities types.String `tfsdk:"start_embedded_activities"`
@@ -138,55 +146,61 @@ func (d *PermissionDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 	resp.Schema = schema.Schema{
 		Description: "Computes permission bit values from named permission flags. Set each permission to `allow` or `deny`.",
 		Attributes: map[string]schema.Attribute{
-			"create_instant_invite":     permAttr,
-			"kick_members":              permAttr,
-			"ban_members":               permAttr,
-			"administrator":             permAttr,
-			"manage_channels":           permAttr,
-			"manage_guild":              permAttr,
-			"add_reactions":             permAttr,
-			"view_audit_log":            permAttr,
-			"priority_speaker":          permAttr,
-			"stream":                    permAttr,
-			"view_channel":              permAttr,
-			"send_messages":             permAttr,
-			"send_tts_messages":         permAttr,
-			"manage_messages":           permAttr,
-			"embed_links":               permAttr,
-			"attach_files":              permAttr,
-			"read_message_history":      permAttr,
-			"mention_everyone":          permAttr,
-			"use_external_emojis":       permAttr,
-			"view_guild_insights":       permAttr,
-			"connect":                   permAttr,
-			"speak":                     permAttr,
-			"mute_members":              permAttr,
-			"deafen_members":            permAttr,
-			"move_members":              permAttr,
-			"use_vad":                   permAttr,
-			"change_nickname":           permAttr,
-			"manage_nicknames":          permAttr,
-			"manage_roles":              permAttr,
-			"manage_webhooks":           permAttr,
-			"manage_expressions":        permAttr,
-			"use_app_commands":          permAttr,
-			"request_to_speak":          permAttr,
-			"manage_events":             permAttr,
-			"manage_threads":            permAttr,
-			"create_public_threads":     permAttr,
-			"create_private_threads":    permAttr,
-			"use_external_stickers":     permAttr,
-			"send_messages_in_threads":  permAttr,
-			"use_embedded_activities":   permAttr,
-			"moderate_members":          permAttr,
-			"use_soundboard":            permAttr,
-			"use_external_sounds":       permAttr,
-			"send_voice_messages":       permAttr,
-			"send_polls":                permAttr,
-			"use_application_commands":  permAttr,
-			"send_thread_messages":      permAttr,
-			"start_embedded_activities": permAttr,
-			"set_voice_channel_status":  permAttr,
+			"create_instant_invite":               permAttr,
+			"kick_members":                        permAttr,
+			"ban_members":                         permAttr,
+			"administrator":                       permAttr,
+			"manage_channels":                     permAttr,
+			"manage_guild":                        permAttr,
+			"add_reactions":                       permAttr,
+			"view_audit_log":                      permAttr,
+			"priority_speaker":                    permAttr,
+			"stream":                              permAttr,
+			"view_channel":                        permAttr,
+			"send_messages":                       permAttr,
+			"send_tts_messages":                   permAttr,
+			"manage_messages":                     permAttr,
+			"embed_links":                         permAttr,
+			"attach_files":                        permAttr,
+			"read_message_history":                permAttr,
+			"mention_everyone":                    permAttr,
+			"use_external_emojis":                 permAttr,
+			"view_guild_insights":                 permAttr,
+			"connect":                             permAttr,
+			"speak":                               permAttr,
+			"mute_members":                        permAttr,
+			"deafen_members":                      permAttr,
+			"move_members":                        permAttr,
+			"use_vad":                             permAttr,
+			"change_nickname":                     permAttr,
+			"manage_nicknames":                    permAttr,
+			"manage_roles":                        permAttr,
+			"manage_webhooks":                     permAttr,
+			"manage_expressions":                  permAttr,
+			"use_app_commands":                    permAttr,
+			"request_to_speak":                    permAttr,
+			"manage_events":                       permAttr,
+			"manage_threads":                      permAttr,
+			"create_public_threads":               permAttr,
+			"create_private_threads":              permAttr,
+			"use_external_stickers":               permAttr,
+			"send_messages_in_threads":            permAttr,
+			"use_embedded_activities":             permAttr,
+			"moderate_members":                    permAttr,
+			"view_creator_monetization_analytics": permAttr,
+			"use_soundboard":                      permAttr,
+			"create_expressions":                  permAttr,
+			"create_events":                       permAttr,
+			"use_external_sounds":                 permAttr,
+			"send_voice_messages":                 permAttr,
+			"send_polls":                          permAttr,
+			"use_external_apps":                   permAttr,
+			"pin_messages":                        permAttr,
+			"bypass_slowmode":                     permAttr,
+			"use_application_commands":            permAttr,
+			"send_thread_messages":                permAttr,
+			"start_embedded_activities":           permAttr,
+			"set_voice_channel_status":            permAttr,
 			"allow_bits": schema.Int64Attribute{
 				Computed:    true,
 				Description: "The computed bitwise value of all permissions set to `allow`.",
@@ -256,10 +270,16 @@ func (d *PermissionDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		{data.SendMessagesInThreads, permSendMessagesInThreads},
 		{data.UseEmbeddedActivities, permUseEmbeddedActivities},
 		{data.ModerateMembers, permModerateMembers},
+		{data.ViewCreatorMonetization, permViewCreatorMonetization},
 		{data.UseSoundboard, permUseSoundboard},
+		{data.CreateExpressions, permCreateExpressions},
+		{data.CreateEvents, permCreateEvents},
 		{data.UseExternalSounds, permUseExternalSounds},
 		{data.SendVoiceMessages, permSendVoiceMessages},
 		{data.SendPolls, permSendPolls},
+		{data.UseExternalApps, permUseExternalApps},
+		{data.PinMessages, permPinMessages},
+		{data.BypassSlowmode, permBypassSlowmode},
 		{data.UseApplicationCommands, permUseAppCommands},
 		{data.SendThreadMessages, permSendMessagesInThreads},
 		{data.StartEmbeddedActivities, permUseEmbeddedActivities},
