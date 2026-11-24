@@ -37,8 +37,11 @@ resource "discord_channel_permission" "read_only" {
 - `administrator` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `attach_files` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `ban_members` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
+- `bypass_slowmode` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `change_nickname` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `connect` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
+- `create_events` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
+- `create_expressions` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `create_instant_invite` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `create_private_threads` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `create_public_threads` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
@@ -58,6 +61,7 @@ resource "discord_channel_permission" "read_only" {
 - `moderate_members` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `move_members` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `mute_members` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
+- `pin_messages` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `priority_speaker` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `read_message_history` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `request_to_speak` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
@@ -74,6 +78,7 @@ resource "discord_channel_permission" "read_only" {
 - `use_app_commands` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `use_application_commands` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `use_embedded_activities` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
+- `use_external_apps` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `use_external_emojis` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `use_external_sounds` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `use_external_stickers` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
@@ -81,6 +86,7 @@ resource "discord_channel_permission" "read_only" {
 - `use_vad` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `view_audit_log` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `view_channel` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
+- `view_creator_monetization_analytics` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 - `view_guild_insights` (String) Set to `allow` or `deny` to include this permission in the respective bits output.
 
 ### Read-Only
